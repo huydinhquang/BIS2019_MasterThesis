@@ -1,22 +1,17 @@
 import streamlit as st
-import Views.Components as mc
+# import Views.Components as mc
 import Controllers.MongoDBConnection as con
 import Processor as processor
 import Scraper as scraper
-import Controllers.ECGModel as ecgModel
 
 st.title('This is a Huy test website')
-mc.Print()
-
-# result = con.connectMongoDB()
-# st.write(len(result))
+# mc.Print()
 
 ecgProperty = processor.GetSourceProperty(r"C:\Users\HuyDQ\OneDrive\HuyDQ\OneDrive\MasterThesis\Thesis\DB\MIT\100.dat")
-if not ecgProperty.Source:
+st.write(ecgProperty.source)
+if not ecgProperty.source:
     st.write('Cannot read source property!')
     st.stop()
-
-st.write(ecgProperty.Source)
 
 myDB = con.connectMongoDB()
 myCol = con.connectMongoCollectionDB()

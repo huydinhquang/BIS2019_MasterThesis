@@ -1,7 +1,7 @@
 import streamlit as st
 import gridfs
-import json
 import Controllers.ECGModel as ecgModel
+import Controllers.Common as common
 
 def ImportDB(myDB, filePath, fileName):
     try:
@@ -16,12 +16,9 @@ def ImportDB(myDB, filePath, fileName):
         st.stop()
 
 def SaveECGProperty(myCol, ecgProperty: ecgModel.ECG, fileID):
-    # ecgData = { "Source": "MIT", "FileName" : "100", "Channel": 2, "Record": 11520000, "Time": 1800, "Sample rate": 500, "ECG" : ['', id]}
-    st.write(fileID)
-    ecgProperty.ECG = fileID
-    st.write(ecgProperty.ECG)
+    ecgProperty.ecg = [fileID]
     # jsonECGPropertyStr = json.dumps(ecgProperty.__dict__)
-    jsonECGPropertyStr = json.dumps(ecgProperty, default=lambda x: x.__dict__)
+    jsonECGPropertyStr = common.parse_json(ecgProperty.__dict__)
     output = myCol.insert_one(jsonECGPropertyStr)
     return output
 
@@ -30,14 +27,13 @@ def SaveECGData(myDB, myCol, filePath, fileName, ecgProperty: ecgModel.ECG):
     fileID = file._id
     st.write(fileID)
     if fileID:
-        st.write('Vao day hok? 1')
         ecg = SaveECGProperty(myCol, ecgProperty, fileID)
         ecgID = ecg.inserted_id
         st.write(ecgID)
         if ecgID:
-            st.write('Vao day hok? 2')
             return fileID, ecgID
         else:
+            # TODO: Delete source file if the ECG Property can't be inserted
             return fileID, None
     else:
         return None, None
