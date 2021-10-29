@@ -1,27 +1,37 @@
 import streamlit as st
-# import Views.Components as mc
+import Views.DBImport as dbImport
 import Controllers.MongoDBConnection as con
 import Processor as processor
 import Scraper as scraper
 
-st.title('This is a Huy test website')
-# mc.Print()
+st.title('ECG System')
 
-ecgProperty = processor.GetSourceProperty(r"C:\Users\HuyDQ\OneDrive\HuyDQ\OneDrive\MasterThesis\Thesis\DB\MIT\100.dat")
-st.write(ecgProperty.source)
-if not ecgProperty.source:
-    st.write('Cannot read source property!')
-    st.stop()
+filelist = dbImport.LoadForm()
+# if not filelist:
+#     st.write('Cannot read source folder!')
+#     st.stop()
 
-myDB = con.connectMongoDB()
-myCol = con.connectMongoCollectionDB()
+st.text('File list:')
+st.write(len(filelist))
 
-fileID, ecgID = scraper.SaveECGData(myDB, myCol, r"C:\Users\HuyDQ\OneDrive\HuyDQ\OneDrive\MasterThesis\Thesis\DB\MIT\100.dat", "100.dat", ecgProperty)
+for item in filelist:
+    st.write(item)
+    st.write(item[0])
+    ecgProperty = processor.GetSourceProperty(item[0])
+    # st.write(ecgProperty.source)
+    # if not ecgProperty.source:
+    #     st.write('Cannot read source property!')
+    #     st.stop()
 
-if fileID:
-    if ecgID:
-        st.write('Imported successfully!')
-    else:
-        st.write('Import failed with ECG Property!')
-else:
-    st.write('Import failed with Database source!')
+# myDB = con.connectMongoDB()
+# myCol = con.connectMongoCollectionDB()
+
+# fileID, ecgID = scraper.SaveECGData(myDB, myCol, r"C:\Users\HuyDQ\OneDrive\HuyDQ\OneDrive\MasterThesis\Thesis\DB\MIT\100.dat", "100.dat", ecgProperty)
+
+# if fileID:
+#     if ecgID:
+#         st.write('Imported successfully!')
+#     else:
+#         st.write('Import failed with ECG Property!')
+# else:
+#     st.write('Import failed with Database source!')
