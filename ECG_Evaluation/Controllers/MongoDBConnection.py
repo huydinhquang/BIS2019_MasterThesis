@@ -2,8 +2,7 @@ import streamlit as st
 import pymongo as pym
 import Controllers.SecretKeys as sk
 
-# Initialize connection.
-client = pym.MongoClient(**sk.mongo)
+# @st.cache(hash_funcs={pym.write_concern.WriteConcern: my_hash_func})
 
 # # Write down mongo data
 # st.write(st.secrets[cons.MongoConnectionStr])
@@ -20,6 +19,8 @@ client = pym.MongoClient(**sk.mongo)
 # Uses st.cache to only rerun when the query changes or after 10 min.
 # @st.cache(hash_funcs={pym.MongoClient: id, })
 def connectMongoDB():
+    # Initialize connection.
+    client = pym.MongoClient(**sk.mongo)
     return client[sk.dbName]
 
 def connectMongoCollectionDB():

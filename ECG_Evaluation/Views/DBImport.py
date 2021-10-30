@@ -13,7 +13,7 @@ def LoadForm():
     root.wm_attributes('-topmost', 1)
 
     # Folder picker button
-    st.write('Please select a folder:')
+    st.text('Please select a folder:')
     clicked = st.button('Folder Picker')
     if clicked:
         dirPath = filedialog.askdirectory(master=root)
@@ -28,8 +28,6 @@ def LoadForm():
                     dirlist.append([dirPath + '/' + file])                   
                     if not fileName:
                         fileName = file.split(".")[0]
-        st.text('File name: ' + dirname + '/' + fileName)
-        # arr = np.concatenate((filelist, dirlist), axis=0) 
-        # st.write(arr)
-        #if not filelist or not dirlist:
-        return np.concatenate((filelist, dirlist), axis=1) 
+        return np.concatenate((filelist, dirlist), axis=1)
+    else:
+        return None

@@ -1,14 +1,26 @@
 import streamlit as st
 from Controllers.ECGModel import ECG
+import wfdb
+from datetime import date
 
-def GetSourceProperty(filePath):
-    return ECG(source="MIT", file_name="100", channel=2, record=11520000, time=1800, sample_rate=500, ecg=None)
-    # ecg = ecgModel.ECG
-    # ecg.Source = "MIT"
-    # ecg.FileName = "100"
-    # ecg.Channel = 2
-    # ecg.Record = 11520000
-    # ecg.Time = 1800
-    # ecg.SampleRate = 500
-    # return ecg
-    
+def GetSourceProperty(fileName, dirName):
+    currentDate = date.today()
+    signals, fields = wfdb.rdsamp(dirName + '/' + fileName)
+    fs = fields['fs']
+    time = round(len(signals) / fs)
+    chanels = len(signals[0])
+    # st.text('Channel(s): ' + str(chanels))
+    # st.text('Record(s): ' + str(len(signals)))
+    # st.text('Time(s): ' + str(time))
+    # st.text('Sample rate: ' + str(fs))
+    return ECG(
+        source=None,
+        file_name=fileName,
+        channel=chanels,
+        record=len(signals),
+        time=time,
+        sample_rate=fs,
+        ecg=None,
+        created_date=currentDate,
+        modified_date=currentDate
+    )
