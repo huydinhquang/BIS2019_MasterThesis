@@ -1,33 +1,4 @@
 import streamlit as st
-import os
-import tkinter as tk
-from tkinter import filedialog
-import numpy as np
 
-def LoadForm():
-    # Set up tkinter
-    root = tk.Tk()
-    root.withdraw()
-
-    # Make folder picker dialog appear on top of other windows
-    root.wm_attributes('-topmost', 1)
-
-    # Folder picker button
-    st.text('Please select a folder:')
-    clicked = st.button('Folder Picker')
-    if clicked:
-        dirPath = filedialog.askdirectory(master=root)
-        dirname = st.text_input('Selected folder:', dirPath)    
-        # st.text(dirname) 
-        filelist = []
-        dirlist = []
-        fileName=None
-        for root, dirs, files in os.walk(dirname):
-            for file in files:
-                    filelist.append([file])
-                    dirlist.append([dirPath + '/' + file])                   
-                    if not fileName:
-                        fileName = file.split(".")[0]
-        return np.concatenate((filelist, dirlist), axis=1)
-    else:
-        return None
+def load_form():
+    return st.text_input(label='Please add a folder:', value="C:/Users/HuyDQ/OneDrive/HuyDQ/OneDrive/MasterThesis/Thesis/DB/PTB")

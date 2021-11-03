@@ -1,44 +1,21 @@
-import streamlit as st
 import gridfs
-import Controllers.ECGModel as ecgModel
+import Controllers.ECGModel as ecg_model
 import Controllers.Common as common
 
-# def ImportDB(myDB, filePath, fileName):
-#     # try:
-#     fileData = open(filePath, "rb")
-#     data = fileData.read()
-#     fs = gridfs.GridFS(myDB)
-#     result = fs.put(data, filename = fileName)
-#     output = fs.get(result)
-#     return output
-#     # except ValueError:
-#     #     st.write('Please check your file path!')
-#     #     st.stop()
-
-def SaveECGProperty(myCol, ecgProperty: ecgModel.ECG, listFileID):
-    ecgProperty.ecg = listFileID
-    # jsonECGPropertyStr = json.dumps(ecgProperty.__dict__)
-    jsonECGPropertyStr = common.parse_json(ecgProperty.__dict__)
-    output = myCol.insert_one(jsonECGPropertyStr)
+def save_ecg_property(my_col, ecg_property: ecg_model.ECG, list_file_id):
+    ecg_property.ecg = list_file_id
+    jsonecg_propertyStr = common.parse_json(ecg_property.__dict__)
+    output = my_col.insert_one(jsonecg_propertyStr)
     return output.inserted_id
 
-def SaveECGFile(myDB, myCol, filePath, fileName, ecgProperty: ecgModel.ECG):
-    fileData = open(filePath, "rb")
-    data = fileData.read()
-    fs = gridfs.GridFS(myDB)
-    result = fs.put(data, filename = fileName)
+def save_ecg_file(my_db, file_path, file_name):
+    file_data = open(file_path, "rb")
+    data = file_data.read()
+    fs = gridfs.GridFS(my_db)
+    result = fs.put(data, file_name = file_name)
     output = fs.get(result)
-    # file = ImportDB(myDB, filePath, fileName)
-    fileID = output._id
-    if fileID:
-        print('FileId: ' + str(fileID))
-        print('FilePath: ' + filePath)
-        return fileID
-        # ecg = SaveECGProperty(myCol, ecgProperty, fileID)
-        # ecgID = ecg.inserted_id
-        # st.write(ecgID)
-        # if ecgID:
-        #     return fileID, ecgID
-        # else:
-        #     # TODO: Delete source file if the ECG Property can't be inserted
-        #     return fileID, None
+    file_id = output._id
+    if file_id:
+        print('file_id: ' + str(file_id))
+        print('file_path: ' + file_path)
+        return file_id

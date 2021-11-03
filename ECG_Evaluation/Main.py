@@ -1,101 +1,71 @@
+from pymongo import common
 import streamlit as st
-import Views.DBImport as dbImport
+import Views.DBImport as db_import
 import Controllers.MongoDBConnection as con
 import Processor as processor
 import Scraper as scraper
 import os
-import tkinter as tk
-from tkinter import filedialog
 import numpy as np
+import Controllers.Common as common
 
-st.title('ECG System')
-importDB = None
+st.title('Test System')
 
-
-def ProcessFile(dirName):
-    fileList = []
-    dirlist = []
-    fileName = None
-    for root, dirs, files in os.walk(dirName):
+def process_file(dir_name):
+    file_list=[]
+    dir_list=[]
+    file_name=None
+    for root, dirs, files in os.walk(dir_name):
         for file in files:
-            fileList.append([file])
-            dirlist.append([dirPath + '/' + file])
-            if not fileName:
-                fileName = file.split(".")[0]
-    if not fileList or not dirlist:
+            # file_name=os.path.join(root, file)
+            file_list.append([file])
+            dir_list.append([dir_name + '/' + file])
+            if not file_name:
+                file_name = file.split(".")[0]
+    if not file_list or not dir_list:
         st.write('Cannot read source folder!')
         st.stop()
-    return np.concatenate((fileList, dirlist), axis=1), fileName
+    return np.concatenate((file_list, dir_list), axis=1), file_name
 
+def import_data(final_ecg_property, file_list):
+    # Open MongoDB connection
+    my_db = con.connect_mongodb()
+    my_col = con.connect_mongo_collectiondb()
 
-def ImportDB():
-    listFileID = []
-    for item in fileList:
-        ecgProperty = processor.GetSourceProperty(fileName, dirName)
-        st.write(ecgProperty.source)
-        if not ecgProperty.source:
-            st.write('Cannot read source property!')
-            st.stop()
-
-        # Open MongoDB connection
-        myDB = con.connectMongoDB()
-        myCol = con.connectMongoCollectionDB()
-
+    list_file_id = []
+    for item in file_list:
         # Save ECG file to MongoDB
-        fileID = scraper.SaveECGFile(
-            myDB, myCol, item[1], item[0], ecgProperty)
-        if fileID:
-            listFileID.append([fileID])
-    ecgID = scraper.SaveECGProperty(myCol, ecgProperty, listFileID)
-    if ecgID:
-        print('ECGId: ' + str(ecgID))
-        st.write('Imported successfully!')
+        file_id = scraper.save_ecg_file(my_db, item[1], item[0])
+        if file_id:
+            list_file_id.append([file_id])
+    ecg_id = scraper.save_ecg_property(my_col, final_ecg_property, list_file_id)
+    if ecg_id:
+        print('ecg_id: ' + str(ecg_id))
+        common.render_text_success('Imported successfully!')
 
-
-def ReadProperty(fileName, dirName):
-    ecgProperty = processor.GetSourceProperty(fileName, dirName)
-    # st.write(ecgProperty.channel)
-    if not ecgProperty.channel:
+def read_property(file_list, file_name, dir_name):
+    ecg_property = processor.get_source_property(file_name, dir_name)
+    # st.write(ecg_property.channel)
+    if not ecg_property.channel:
         st.write('Cannot read source property!')
         st.stop()
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        title = st.text_input('Source name', 'Test')
-        st.text('Total records')
-        totalRecords = st.text(str(ecgProperty.record))
-    with col2:
-        options = st.multiselect(
-            'Channel(s)',
-            ['I', 'II', 'III',
-             'aVR', 'aVL', 'aVF',
-             'V1', 'V2', 'V3',
-             'V4', 'V5', 'V6'])
-        st.text('Total channels')
-        st.text(str(len(options)))
-    with col3:
-        sampleRate = st.slider('Sample rate', 0, 10000,
-                               ecgProperty.sample_rate)
-        st.text('Time(s)')
-        times = st.text(str(ecgProperty.time))
+    final_ecg_property = processor.render_property(ecg_property)
 
-    importDB = st.button('Import source')
+    import_source = st.button('Import source')
+    if import_source:
+        import_data(final_ecg_property, file_list)
 
-# Set up tkinter
-root = tk.Tk()
-root.withdraw()
+# Initialization
+if 'get_data' not in st.session_state:
+	st.session_state.get_data = False
 
-# Make folder picker dialog appear on top of other windows
-root.wm_attributes('-topmost', 1)
+dir_name = db_import.load_form()
+clicked = st.button('Get file')
+if clicked or st.session_state.get_data:
+    st.session_state.get_data = True
 
-# Folder picker button
-st.text('Please select a folder:')
-clicked = st.button('Folder Picker')
-if clicked:
-    dirPath = filedialog.askdirectory(master=root)
-    dirName = st.text_input('Selected folder:', dirPath)
     # Process to get the list of files when selecting the folder
-    fileList, fileName = ProcessFile(dirName)
+    file_list, file_name = process_file(dir_name)
 
     # Read ECG properties when user selects a source
-    ReadProperty(fileName, dirName)
+    read_property(file_list, file_name, dir_name)
