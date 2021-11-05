@@ -1,6 +1,6 @@
 import streamlit as st
 import Controllers.Constants as cons
 
-mongo = st.secrets[cons.MongoConnectionStr]
-dbName = st.secrets[cons.MongoDB][cons.DBName]
-collectionName = st.secrets[cons.MongoDB][cons.CollectionName]
+mongo = st.secrets[cons.MONGOCONNECTIONSTR]
+db_name = st.secrets[cons.MONGODB][cons.DBNAME]
+collection_name = st.secrets[cons.MONGODB][cons.COLLECTIONNAME]
