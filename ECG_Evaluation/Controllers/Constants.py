@@ -1,7 +1,8 @@
 MONGOCONNECTIONSTR = "mongo"
-MONGODB = "mongoDB"
-DBNAME = "dbName"
-COLLECTIONNAME = "collectionName"
+MONGODB = "mongodb"
+DB_NAME = "db_name"
+COLLECTION_MAIN_NAME = "collection_main_name"
+COLLECTION_CHANNEL_NAME = "collection_channel_name"
 
 ECG_ID = '_id'
 ECG_CHANNEL = 'channel'

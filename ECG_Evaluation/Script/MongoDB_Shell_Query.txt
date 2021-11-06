@@ -1,0 +1,6 @@
+use ECG
+
+db.fs.chunks.deleteMany({})
+db.fs.files.deleteMany({})
+db.ECG_Channel.deleteMany({})
+db.ECG_Main.deleteMany({})

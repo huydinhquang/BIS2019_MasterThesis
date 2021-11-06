@@ -4,8 +4,7 @@ import Controllers.SecretKeys as sk
 def connect_mongodb():
     # Initialize connection.
     client = pym.MongoClient(**sk.mongo)
-    return client[sk.db_name]
-
-def connect_mongo_collectiondb():
-    db = connect_mongodb()
-    return db[sk.collection_name]
+    db = client[sk.db_name]
+    main_col = db[sk.collection_main_name]
+    channel_col = db[sk.collection_channel_name]
+    return db, main_col, channel_col

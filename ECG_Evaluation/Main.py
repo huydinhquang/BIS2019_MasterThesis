@@ -7,6 +7,7 @@ import Processor as processor
 import Scraper as scraper
 import os
 import numpy as np
+from Controllers.ECGModel import ECG
 
 st.title('Test System')
 
@@ -40,26 +41,23 @@ def process_file(dir_name):
         st.stop()
     return np.concatenate((file_list, dir_list), axis=1), file_name
 
-def import_data(final_ecg_property, file_list):
-    # Open MongoDB connection
-    my_db = con.connect_mongodb()
-    my_col = con.connect_mongo_collectiondb()
-
+def import_data(my_db, my_col, final_ecg_property, file_list):
     list_file_id = []
     for item in file_list:
         # Save ECG file to MongoDB
         file_id = scraper.save_ecg_file(my_db, item[1], item[0])
         if file_id:
             list_file_id.append([file_id])
-    ecg_id = scraper.save_ecg_property(my_col, final_ecg_property, list_file_id)
+    ecg_id = scraper.save_ecg_property(my_col, final_ecg_property, list_file_id, False)
     if ecg_id:
-        print('ecg_id: ' + str(ecg_id))
-        st.success('Imported successfully!')
+        print('ecg_sub_id: ' + str(ecg_id))
+        return ecg_id
 
-def read_property(file_list, file_name, dir_name):
+def read_property(file_name, dir_name):
     # Read source ecg property
-    ecg_property = processor.get_source_property(file_name, dir_name)
+    return processor.get_source_property(file_name, dir_name)
     
+def read_final_property(file_name, dir_name, ecg_property):
     # Get final ecg property
     final_ecg_property = processor.render_property(ecg_property)
 
@@ -67,9 +65,29 @@ def read_property(file_list, file_name, dir_name):
         import_source = st.button('Import source')
         if import_source:
             # Create folder and write each channel from the source
-            processor.write_channel(final_ecg_property, file_name, dir_name)
+            list_sub_channel_folder = processor.write_channel(final_ecg_property, file_name, dir_name)
 
-            import_data(final_ecg_property, file_list)
+            # Open MongoDB connection
+            my_db, my_main_col, my_channel_col = con.connect_mongodb()
+
+            # Insert separated ECG channels to MongoDB
+            list_ecg_sub_id = []
+            for item in list_sub_channel_folder:
+                # Process to get the list of files when selecting the folder
+                file_sub_list, file_sub_name = process_file(item)
+
+                # Read ECG properties for each ecg channel folder
+                ecg_sub_property = read_property(file_sub_name, item)
+                ecg_sub_property.source = final_ecg_property.source
+                ecg_sub_id = import_data(my_db, my_channel_col, ecg_sub_property, file_sub_list)
+                if ecg_sub_id:
+                    list_ecg_sub_id.append([ecg_sub_id])
+            
+            # Insert ECG Main (source) to MongoDB
+            ecg_id = scraper.save_ecg_property(my_main_col, final_ecg_property, list_ecg_sub_id, True)
+            if ecg_id:
+                print('ecg_id: ' + str(ecg_id))
+                st.success('Imported successfully!')
 
 
 add_selectbox = st.sidebar.selectbox(
@@ -87,15 +105,18 @@ if add_selectbox.lower() == "import source":
         file_list, file_name = process_file(dir_name)
 
         # Read ECG properties when user selects a source
-        read_property(file_list, file_name, dir_name)
+        ecg_property = read_property(file_name, dir_name)
+
+        # Read Final ECG properties
+        read_final_property(file_name, dir_name, ecg_property)
+
 elif add_selectbox.lower() == "extract annotations":
     list_channel = ann_extract.load_form()
     
     # Open MongoDB connection
-    my_db = con.connect_mongodb()
-    my_col = con.connect_mongo_collectiondb()
+    my_db, my_main_col, my_channel_col = con.connect_mongodb()
 
-    processor.load_source_data(my_col, list_channel)
+    processor.load_source_data(my_channel_col, list_channel)
     
 
 
