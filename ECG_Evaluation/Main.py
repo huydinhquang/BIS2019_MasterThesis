@@ -13,6 +13,8 @@ st.title('Test System')
 # Initialization
 if 'get_data' not in st.session_state:
 	st.session_state.get_data = False
+if 'get_select_source' not in st.session_state:
+	st.session_state.get_select_source = False
 # if 'connect_dba' not in st.session_state:
 # 	st.session_state.connect_dba = False
 
@@ -64,6 +66,9 @@ def read_property(file_list, file_name, dir_name):
     if final_ecg_property:
         import_source = st.button('Import source')
         if import_source:
+            # Create folder and write each channel from the source
+            processor.write_channel(final_ecg_property, file_name, dir_name)
+
             import_data(final_ecg_property, file_list)
 
 
@@ -85,6 +90,7 @@ if add_selectbox.lower() == "import source":
         read_property(file_list, file_name, dir_name)
 elif add_selectbox.lower() == "extract annotations":
     list_channel = ann_extract.load_form()
+    
     # Open MongoDB connection
     my_db = con.connect_mongodb()
     my_col = con.connect_mongo_collectiondb()
