@@ -82,7 +82,8 @@ def render_property(ecg_property : ECG):
 def load_source_data(my_col, list_channel):
     count = 0
     list_ecg = []
-    for record in my_col.find():
+    query = {cons.ECG_CHANNEL:{"$in":list_channel}}
+    for record in my_col.find(query):
         count = count + 1
         list_ecg.append(ECG(
             source=record[cons.ECG_SOURCE],
@@ -115,6 +116,6 @@ def load_source_data(my_col, list_channel):
     st.info('Total items: ' + str(count))
     selected_indices = st.multiselect('Select rows:', df.index)
     if selected_indices:
-        st.session_state.get_select_source = True
+        # st.session_state.get_select_source = True
         selected_rows = df.loc[selected_indices]
         st.write('### Selected Rows', selected_rows)

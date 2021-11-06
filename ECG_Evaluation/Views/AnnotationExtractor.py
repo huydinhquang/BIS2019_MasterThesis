@@ -8,4 +8,7 @@ def load_form():
              'V1', 'V2', 'V3',
              'V4', 'V5', 'V6',
              'Vx', 'Vy', 'Vz'])
-    return list_channel
+    sample_rate = st.sidebar.number_input('Sample rate', min_value=0,max_value=10000,value=1000)
+    export_unit = st.sidebar.number_input('Export unit', min_value=0, max_value=10000, value=10)
+    filter_source = st.sidebar.button('Filter source')
+    return list_channel, sample_rate, export_unit, filter_source
