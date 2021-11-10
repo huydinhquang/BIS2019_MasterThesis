@@ -12,3 +12,9 @@ def load_form():
     export_unit = st.sidebar.number_input('Export unit', min_value=0, max_value=10000, value=10)
     filter_source = st.sidebar.button('Filter source')
     return list_channel, sample_rate, export_unit, filter_source
+
+def render_download_section():
+    folder_download = st.text_input(label='Downloadable folder:', value="C:/Users/HuyDQ/OneDrive/HuyDQ/OneDrive/MasterThesis/Thesis/DB/Download")
+    if folder_download:
+        clicked = st.button('Download files')
+        return clicked

@@ -17,7 +17,7 @@ def render_text_error(text):
 def convert_list_to_string(list):
     return ', '.join(str(item) for item in list)
 
-def convet_timestamp_to_datetime(value):
+def convert_timestamp_to_datetime(value):
     time_stamp_value = value[cons.CONS_DATE_STR]
     timestamp = dt.datetime.fromtimestamp(time_stamp_value/1000.0)
     timestamp_formatted = timestamp.strftime("%d.%m.%Y %H:%M:%S")

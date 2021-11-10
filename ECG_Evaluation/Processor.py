@@ -8,9 +8,26 @@ import Controllers.Common as common
 import os
 from pathlib import Path
 import shutil
-import numpy
+import numpy as np
+import matplotlib.pyplot as plt
+import Views.DBImport as db_import
+import Views.AnnotationExtractor as ann_extract
 
 current_date = datetime.now()
+
+if 'select_row' not in st.session_state:
+	st.session_state.select_row = False
+
+# def visualizeChart(signals, fs, channels):
+#     for channel in range(channels):        
+#         #     wfdb.plot_items(signal=signals, fs=fields['fs'], title='Huy Test')
+#         #     st.pyplot(signals)
+#         signals, fields = wfdb.rdsamp(dirname + '/' + fileName, channels=[channel])
+#         timeArray = np.arange(signals.size) / fs
+#         plt.plot(timeArray, signals)
+#         plt.xlabel("time in s")
+#         plt.ylabel("ECG in mV")
+#         st.pyplot(plt)
 
 def write_channel(final_ecg_property : ECG, file_name, dir_name):
     list_sub_channel_folder = []
@@ -35,6 +52,7 @@ def get_source_property(file_name, dir_name):
         time = round(len(signals) / fs)
         channels = [item.upper() for item in fields[cons.SINGAL_NAME]] 
         return ECG(
+            id=None,
             source=None,
             file_name=file_name,
             channel=channels,
@@ -50,24 +68,15 @@ def get_source_property(file_name, dir_name):
         st.exception(e)
 
 def render_property(ecg_property : ECG):
-    col1, col2 = st.columns(2)
-    with col1:
-        source = st.text_input('Source name', 'Test')
-        channel = st.multiselect('Channel(s)',ecg_property.channel,ecg_property.channel)
-    with col2:
-        # sample_rate = st.slider('Sample rate', 0, 10000,
-        #                        ecg_property.sample_rate)
-        st.text('Sample rate: ' + str(ecg_property.sample_rate))
-        st.text('Total records: ' + str(ecg_property.record))
-        st.text('Time(s): ' + str(ecg_property.time))
-        st.text('Total channels: ' + str(len(ecg_property.channel)))
+    source, channel = db_import.render_property(ecg_property)
         
     # Check input channels vs total channels of source
     if not len(ecg_property.channel) == len(channel):
-        st.error('Input channels  must be equal to the total channels of the source!')
+        st.error('Input channels must be equal to the total channels of the source!')
         return None
     else:
         return ECG(
+            id=None,
             source=source,
             file_name=ecg_property.file_name,
             channel=channel,
@@ -80,6 +89,7 @@ def render_property(ecg_property : ECG):
         )
 
 def load_source_data(my_col, list_channel):
+    st.session_state.select_row = True
     count = 0
     list_ecg = []
     query = {cons.ECG_CHANNEL:{"$in":list_channel}}
@@ -93,8 +103,9 @@ def load_source_data(my_col, list_channel):
             time=record[cons.ECG_TIME],
             sample_rate=record[cons.ECG_SAMPLE_RATE],
             ecg=len(record[cons.ECG_ECG]),
-            created_date=common.convet_timestamp_to_datetime(record[cons.ECG_CREATED_DATE]),
-            modified_date=common.convet_timestamp_to_datetime(record[cons.ECG_MODIFIED_DATE])
+            created_date=common.convert_timestamp_to_datetime(record[cons.ECG_CREATED_DATE]),
+            modified_date=common.convert_timestamp_to_datetime(record[cons.ECG_MODIFIED_DATE]),
+            id=str(record[cons.ECG_ID])
         ))
         
     header_table = [
@@ -106,7 +117,8 @@ def load_source_data(my_col, list_channel):
         cons.HEADER_SAMPLE_RATE,
         cons.HEADER_ECG,
         cons.HEADER_CREATED_DATE,
-        cons.HEADER_MODIFIED_DATE
+        cons.HEADER_MODIFIED_DATE,
+        cons.HEADER_ID
     ]
 
     df = pd.DataFrame.from_records([vars(s) for s in list_ecg])
@@ -115,7 +127,13 @@ def load_source_data(my_col, list_channel):
     st.write('### Full Dataset', df)
     st.info('Total items: ' + str(count))
     selected_indices = st.multiselect('Select rows:', df.index)
-    if selected_indices:
+    if selected_indices or st.session_state.select_row:
+        st.session_state.select_row = True
         # st.session_state.get_select_source = True
         selected_rows = df.loc[selected_indices]
         st.write('### Selected Rows', selected_rows)
+
+        clicked = ann_extract.render_download_section()
+        if clicked:
+            for item in selected_rows:
+                st.write(item[cons.ECG_ID])

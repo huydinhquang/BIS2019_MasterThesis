@@ -14,8 +14,10 @@ st.title('Test System')
 # Initialization
 if 'get_data' not in st.session_state:
 	st.session_state.get_data = False
-if 'filter_source' not in st.session_state:
-	st.session_state.filter_source = False
+# if 'filter_source' not in st.session_state:
+# 	st.session_state.filter_source = False
+if 'select_row' not in st.session_state:
+	st.session_state.select_row = False
 # if 'connect_dba' not in st.session_state:
 # 	st.session_state.connect_dba = False
 
@@ -111,13 +113,13 @@ if add_selectbox.lower() == "import source":
 
 elif add_selectbox.lower() == "extract annotations":
     list_channel, sample_rate, export_unit, clicked = ann_extract.load_form()
-    if clicked or st.session_state.filter_source:
-        st.session_state.filter_source = True
+    if clicked:
+        # st.session_state.filter_source = True
 
         # Open MongoDB connection
         my_db, my_main_col, my_channel_col = con.connect_mongodb()
 
-        st.write(list_channel)
+        # Load result after list channels selection
         processor.load_source_data(my_channel_col, list_channel)
     
 
