@@ -2,13 +2,8 @@ import gridfs
 import Controllers.ECGModel as ecg_model
 import Controllers.Common as common
 
-def save_ecg_property(my_col, ecg_property: ecg_model.ECG, list_file_id, is_main_ecg):
-    # If it is the main (source) ECG, then add all sub channels.
-    # Otherwise, it is the sub channel, then add all ecg files.
-    if is_main_ecg:
-        ecg_property.channel = list_file_id
-    else:
-        ecg_property.ecg = list_file_id
+def save_ecg_property(my_col, ecg_property: ecg_model.ECG, list_file_id):
+    ecg_property.ecg = list_file_id
     jsonecg_propertyStr = common.parse_json(ecg_property.__dict__)
     output = my_col.insert_one(jsonecg_propertyStr)
     return output.inserted_id
