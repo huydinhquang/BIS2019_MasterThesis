@@ -89,7 +89,7 @@ def render_property(ecg_property : ECG):
         )
 
 def load_source_data(my_col, list_channel):
-    st.session_state.select_row = True
+    # st.session_state.select_row = True
     count = 0
     list_ecg = []
     query = {cons.ECG_CHANNEL:{"$in":list_channel}}

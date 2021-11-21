@@ -3,7 +3,7 @@ from Controllers.ECGModel import ECG
 
 def load_form():
     folder_source = st.text_input(label='Please enter a folder:', value="C:/Users/HuyDQ/OneDrive/HuyDQ/OneDrive/MasterThesis/Thesis/DB/PTB")
-    clicked = st.button('Get file')
+    clicked = st.button('Retrieve property')
     return folder_source, clicked
 
 def render_property(ecg_property : ECG):
@@ -15,7 +15,7 @@ def render_property(ecg_property : ECG):
         # sample_rate = st.slider('Sample rate', 0, 10000,
         #                        ecg_property.sample_rate)
         st.text('Sample rate: ' + str(ecg_property.sample_rate))
-        st.text('Total records: ' + str(ecg_property.record))
+        st.text('Samples: ' + str(ecg_property.record))
         st.text('Time(s): ' + str(ecg_property.time))
         st.text('Total channels: ' + str(len(ecg_property.channel)))
     return source, channel
