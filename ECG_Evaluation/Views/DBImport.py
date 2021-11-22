@@ -1,10 +1,14 @@
 import streamlit as st
 from Controllers.ECGModel import ECG
+from Controllers.Configure import Configure
+
+config = Configure()
 
 def load_form():
     folder_source = st.text_input(label='Please enter a folder:', value="C:/Users/HuyDQ/OneDrive/HuyDQ/OneDrive/MasterThesis/Thesis/DB/PTB")
+    format_desc = st.selectbox('Format descriptor', config.get_configure_value())
     clicked = st.button('Retrieve property')
-    return folder_source, clicked
+    return folder_source, format_desc, clicked
 
 def render_property(ecg_property : ECG):
     col1, col2 = st.columns(2)

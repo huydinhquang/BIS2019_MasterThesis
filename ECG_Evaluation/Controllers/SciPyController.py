@@ -7,4 +7,5 @@ class SciPyController(ECGController):
         self.test2 = test2
 
     def get_source_property(self):
+        print('Huy test')
         return self.test1 * self.test2

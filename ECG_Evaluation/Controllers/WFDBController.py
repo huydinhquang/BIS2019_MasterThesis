@@ -39,3 +39,29 @@ class WFDBController(ECGController):
         except ValueError:
             e = RuntimeError('Cannot read source property!')
             st.exception(e)
+
+    def write_channel(self, final_ecg_property : ECG, file_name, dir_name):
+        list_sub_channel_folder = []
+        for idx, channel in enumerate(final_ecg_property.channel):
+            # Create folder for each channel
+            path = dir_name + '/' + channel
+            list_sub_channel_folder.append(path)
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            Path(path).mkdir(parents=True, exist_ok=True)
+
+            # Write channel to the folder
+            signals, fields = wfdb.rdsamp(dir_name + '/' + file_name, channels=[idx])
+            wfdb.wrsamp(record_name=channel, fs = final_ecg_property.sample_rate, units=['mV'], sig_name=[channel], p_signal=signals, write_dir=path)
+        return list_sub_channel_folder
+
+    def visualize_chart(self, signals, fs, channels):
+        for channel in range(channels):        
+            #     wfdb.plot_items(signal=signals, fs=fields['fs'], title='Huy Test')
+            #     st.pyplot(signals)
+            signals, fields = wfdb.rdsamp(self.dirname + '/' + self.fileName, channels=[channel])
+            timeArray = np.arange(signals.size) / fs
+            plt.plot(timeArray, signals)
+            plt.xlabel("time in s")
+            plt.ylabel("ECG in mV")
+            st.pyplot(plt)

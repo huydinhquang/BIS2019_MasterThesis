@@ -41,7 +41,7 @@ class Processor:
         return np.concatenate((file_list, dir_list), axis=1), file_name
 
     def get_source_property(self):
-        for e in self.employee_list:
+        for e in self.ecg_list:
             return e.get_source_property()
 
     def render_property(self, ecg_property : ECG):
@@ -64,21 +64,6 @@ class Processor:
                 created_date=ecg_property.created_date,
                 modified_date=ecg_property.modified_date
             )
-
-    def write_channel(self, final_ecg_property : ECG, file_name, dir_name):
-        list_sub_channel_folder = []
-        for idx, channel in enumerate(final_ecg_property.channel):
-            # Create folder for each channel
-            path = dir_name + '/' + channel
-            list_sub_channel_folder.append(path)
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            Path(path).mkdir(parents=True, exist_ok=True)
-
-            # Write channel to the folder
-            signals, fields = wfdb.rdsamp(dir_name + '/' + file_name, channels=[idx])
-            wfdb.wrsamp(record_name=channel, fs = final_ecg_property.sample_rate, units=['mV'], sig_name=[channel], p_signal=signals, write_dir=path)
-        return list_sub_channel_folder
 
     def load_source_data(self, my_col, list_channel):
         # st.session_state.select_row = True
@@ -130,16 +115,7 @@ class Processor:
                 for item in selected_rows:
                     st.write(item[cons.ECG_ID])
 
-    # def visualizeChart(signals, fs, channels):
-    #     for channel in range(channels):        
-    #         #     wfdb.plot_items(signal=signals, fs=fields['fs'], title='Huy Test')
-    #         #     st.pyplot(signals)
-    #         signals, fields = wfdb.rdsamp(dirname + '/' + fileName, channels=[channel])
-    #         timeArray = np.arange(signals.size) / fs
-    #         plt.plot(timeArray, signals)
-    #         plt.xlabel("time in s")
-    #         plt.ylabel("ECG in mV")
-    #         st.pyplot(plt)
+
 
 # if 'select_row' not in st.session_state:
 # 	st.session_state.select_row = False
