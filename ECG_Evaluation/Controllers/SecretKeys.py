@@ -7,3 +7,4 @@ collection_main_name = st.secrets[cons.MONGODB][cons.COLLECTION_MAIN_NAME]
 # collection_channel_name = st.secrets[cons.MONGODB][cons.COLLECTION_CHANNEL_NAME]
 
 format_descriptor = st.secrets[cons.CONFIGURE][cons.FORMAT_DESCRIPTOR]
+channel_name = st.secrets[cons.CONFIGURE][cons.CHANNEL_NAME]

@@ -32,7 +32,7 @@ class Processor:
             for file in files:
                 # file_name=os.path.join(root, file)
                 file_list.append([file])
-                dir_list.append([dir_name + '/' + file])
+                dir_list.append([os.path.join(dir_name,file)])
                 if not file_name:
                     file_name = file.split(".")[0]
         if not file_list or not dir_list:
@@ -45,21 +45,25 @@ class Processor:
             return e.get_source_property()
 
     def render_property(self, ecg_property : ECG):
-        source, channel = db_import.render_property(ecg_property)
+        # Count number of channels
+        total_channels = len(ecg_property.sample[0])
+
+        value = db_import.render_property(ecg_property, total_channels)
             
         # Check input channels vs total channels of source
-        if not len(ecg_property.channel) == len(channel):
+        if (len(value[cons.ECG_CHANNEL]) == 0 or
+            (ecg_property.channel and not len(ecg_property.channel) == len(value[cons.ECG_CHANNEL]))):
             st.error('Input channels must be equal to the total channels of the source!')
             return None
         else:
             return ECG(
                 id=None,
-                source=source,
+                source=value[cons.ECG_SOURCE],
                 file_name=ecg_property.file_name,
-                channel=channel,
-                record=ecg_property.record,
-                time=ecg_property.time,
-                sample_rate=ecg_property.sample_rate,
+                channel=value[cons.ECG_CHANNEL],
+                sample=len(ecg_property.sample),
+                time=value[cons.ECG_TIME],
+                sample_rate=value[cons.ECG_SAMPLE_RATE],
                 ecg=ecg_property.ecg,
                 created_date=ecg_property.created_date,
                 modified_date=ecg_property.modified_date
@@ -76,7 +80,7 @@ class Processor:
                 source=record[cons.ECG_SOURCE],
                 file_name=record[cons.ECG_FILE_NAME],
                 channel=common.convert_list_to_string(record[cons.ECG_CHANNEL]).upper(),
-                record=record[cons.ECG_RECORD],
+                sample=record[cons.ECG_SAMPLE],
                 time=record[cons.ECG_TIME],
                 sample_rate=record[cons.ECG_SAMPLE_RATE],
                 ecg=len(record[cons.ECG_ECG]),
@@ -89,7 +93,7 @@ class Processor:
             cons.HEADER_SOURCE,
             cons.HEADER_FILENAME,
             cons.HEADER_CHANNEL,
-            cons.HEADER_RECORD,
+            cons.HEADER_SAMPLES,
             cons.HEADER_TIME,
             cons.HEADER_SAMPLE_RATE,
             cons.HEADER_ECG,

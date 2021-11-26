@@ -18,27 +18,23 @@ class WFDBController(ECGController):
         super().__init__(dir_name, file_name)
 
     def get_source_property(self):
-        try:
-            signals, fields = wfdb.rdsamp(self.dir_name + '/' + self.file_name)
-            # headers = wfdb.rdheader(dir_name + '/' + file_name)
-            fs = fields[cons.SAMPLING_FREQUENCY]
-            time = round(len(signals) / fs)
-            channels = [item.upper() for item in fields[cons.SINGAL_NAME]] 
-            return ECG(
-                id=None,
-                source=None,
-                file_name=self.file_name,
-                channel=channels,
-                record=len(signals),
-                time=time,
-                sample_rate=fs,
-                ecg=None,
-                created_date=self.current_date,
-                modified_date=self.current_date
-            )
-        except ValueError:
-            e = RuntimeError('Cannot read source property!')
-            st.exception(e)
+        signals, fields = wfdb.rdsamp(self.dir_name + '/' + self.file_name)
+        # headers = wfdb.rdheader(dir_name + '/' + file_name)
+        fs = fields[cons.SAMPLING_FREQUENCY]
+        time = round(len(signals) / fs)
+        channels = [item.upper() for item in fields[cons.SINGAL_NAME]] 
+        return ECG(
+            id=None,
+            source=None,
+            file_name=self.file_name,
+            channel=channels,
+            sample=signals,
+            time=time,
+            sample_rate=fs,
+            ecg=None,
+            created_date=self.current_date,
+            modified_date=self.current_date
+        )
 
     def write_channel(self, final_ecg_property : ECG, file_name, dir_name):
         list_sub_channel_folder = []

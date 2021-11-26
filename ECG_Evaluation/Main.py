@@ -27,12 +27,12 @@ if 'select_row' not in st.session_state:
 
 processor = Processor()
 
-def read_property(dir_name, file_name, format_desc):
+def read_property(dir_name, file_name, file_list, format_desc):
     # Read source ecg property    
     if format_desc == 'wfdb':
         processor.add(WFDBController(dir_name, file_name))
     else:
-        processor.add(SciPyController(dir_name, file_name, 1, 2))
+        processor.add(SciPyController(dir_name, file_name, file_list))
     return processor.get_source_property()
     
 def read_final_property(ecg_property):
@@ -71,10 +71,11 @@ if add_selectbox == "import source":
         file_list, file_name = processor.process_file(dir_name)
 
         # Read ECG properties when user selects a source
-        ecg_property = read_property(dir_name, file_name, format_desc.lower())
+        ecg_property = read_property(dir_name, file_name, file_list, format_desc.lower())
 
         # Read Final ECG properties
-        read_final_property(ecg_property)
+        if ecg_property:
+            read_final_property(ecg_property)
 elif add_selectbox == "extract annotations":
     list_channel, sample_rate, export_unit, clicked = ann_extract.load_form()
     if clicked or st.session_state.select_row:
