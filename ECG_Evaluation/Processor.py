@@ -116,8 +116,9 @@ class Processor:
 
             clicked = ann_extract.render_download_section()
             if clicked:
-                for item in selected_rows:
-                    st.write(item[cons.ECG_ID])
+                # print(selected_rows.to_markdown()) 
+                for index, row in selected_rows.iterrows():
+                    print(row[cons.HEADER_ID])
 
 
 
