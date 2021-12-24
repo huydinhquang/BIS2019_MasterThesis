@@ -7,7 +7,6 @@ config = Configure()
 configure = config.get_configure_value()
 
 def load_form():
-    
     folder_source = st.text_input(label='Please enter a folder:', value="C:/Users/HuyDQ/OneDrive/HuyDQ/OneDrive/MasterThesis/Thesis/DB/PTB")
     format_desc = st.selectbox('Format descriptor', configure[cons.FORMAT_DESCRIPTOR])
     clicked = st.button('Retrieve property')

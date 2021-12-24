@@ -36,6 +36,25 @@ class WFDBController(ECGController):
             modified_date=self.current_date
         )
 
+    # def get_source_property_constraint(self, signal_start, signal_end, channel_target):
+    #     signals, fields = wfdb.rdsamp(self.dir_name + '/' + self.file_name, sampfrom=signal_start,sampto=signal_end, channels=[channel_target])
+    #     # headers = wfdb.rdheader(dir_name + '/' + file_name)
+    #     fs = fields[cons.SAMPLING_FREQUENCY]
+    #     time = round(len(signals) / fs)
+    #     channels = [item.upper() for item in fields[cons.SINGAL_NAME]] 
+    #     return ECG(
+    #         id=None,
+    #         source=None,
+    #         file_name=self.file_name,
+    #         channel=channels,
+    #         sample=signals,
+    #         time=time,
+    #         sample_rate=fs,
+    #         ecg=None,
+    #         created_date=self.current_date,
+    #         modified_date=self.current_date
+    #     )
+
     def write_channel(self, final_ecg_property : ECG, file_name, dir_name):
         list_sub_channel_folder = []
         for idx, channel in enumerate(final_ecg_property.channel):

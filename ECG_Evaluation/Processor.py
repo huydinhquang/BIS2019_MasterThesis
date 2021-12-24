@@ -43,6 +43,10 @@ class Processor:
     def get_source_property(self):
         for e in self.ecg_list:
             return e.get_source_property()
+    
+    # def get_source_property_constraint(self):
+    #     for e in self.ecg_list:
+    #         return e.get_source_property_constraint()
 
     def render_property(self, ecg_property : ECG):
         # Count number of channels
@@ -114,13 +118,28 @@ class Processor:
             selected_rows = df.loc[selected_indices]
             st.write('### Selected Rows', selected_rows)
 
-            clicked = ann_extract.render_download_section()
-            if clicked:
+            folder_download, clicked_download = ann_extract.render_download_section()
+            if clicked_download:
                 # print(selected_rows.to_markdown()) 
                 for index, row in selected_rows.iterrows():
                     print(row[cons.HEADER_ID])
-
-
+            
+    def visualize_chart(self, signals, fs_target, fs):
+        # for channel in range(channels):        
+        #     wfdb.plot_items(signal=signals, fs=fields['fs'], title='Huy Test')
+        #     st.pyplot(signals)
+        signals = signals.flatten()
+        ratio = fs_target/fs
+        # calculate new length of sample
+        new_sample_length = int(signals.shape[0]*ratio)
+        new_samples_singal=np.linspace(signals[0], signals[-1], new_sample_length, endpoint=False)
+        current_signal_position = np.linspace(signals[0], signals[-1], len(signals), endpoint=False)
+        resampled_signal = np.interp(new_samples_singal, current_signal_position, signals)
+        time = np.arange(resampled_signal.size) / fs_target
+        plt.plot(time, resampled_signal,marker='o')
+        plt.xlabel("time in s")
+        plt.ylabel("ECG in mV")
+        st.pyplot(plt)
 
 # if 'select_row' not in st.session_state:
 # 	st.session_state.select_row = False
