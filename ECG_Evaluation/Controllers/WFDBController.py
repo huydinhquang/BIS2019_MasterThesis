@@ -11,7 +11,7 @@ import shutil
 import numpy as np
 import matplotlib.pyplot as plt
 import Views.DBImport as db_import
-import Views.AnnotationExtractor as ann_extract
+import Views.DownloadChannel as download_channel
 
 class WFDBController(ECGController):
     def __init__(self, dir_name, file_name):

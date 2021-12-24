@@ -11,7 +11,7 @@ import shutil
 import numpy as np
 import matplotlib.pyplot as plt
 import Views.DBImport as db_import
-import Views.AnnotationExtractor as ann_extract
+import Views.DownloadChannel as download_channel
 
 class Processor:
     def __init__(self):
@@ -73,7 +73,7 @@ class Processor:
                 modified_date=ecg_property.modified_date
             )
 
-    def load_source_data(self, my_col, list_channel):
+    def load_source_data(self, my_db, my_col, list_channel):
         # st.session_state.select_row = True
         count = 0
         list_ecg = []
@@ -118,10 +118,11 @@ class Processor:
             selected_rows = df.loc[selected_indices]
             st.write('### Selected Rows', selected_rows)
 
-            folder_download, clicked_download = ann_extract.render_download_section()
+            folder_download, clicked_download = download_channel.render_download_section()
             if clicked_download:
                 # print(selected_rows.to_markdown()) 
                 for index, row in selected_rows.iterrows():
+                    # my_db.fs.files.find
                     print(row[cons.HEADER_ID])
             
     def visualize_chart(self, signals, fs_target, fs):

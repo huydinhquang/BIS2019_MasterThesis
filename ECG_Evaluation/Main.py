@@ -1,7 +1,7 @@
 import streamlit as st
 import Views.DBImport as db_import
-import Views.AnnotationExtractor as ann_extract
-import Views.ResampleSignal as resample_signal
+import Views.DownloadChannel as download_channel
+import Views.ExtractAnnotations as extract_anno
 import Controllers.MongoDBConnection as con
 import Scraper as scraper
 from Controllers.WFDBController import WFDBController
@@ -13,8 +13,8 @@ st.title('Test System')
 # Initialization
 if 'get_data' not in st.session_state:
 	st.session_state.get_data = False
-if 'resample_signal' not in st.session_state:
-	st.session_state.resample_signal = False
+if 'extract_anno' not in st.session_state:
+	st.session_state.extract_anno = False
 if 'select_row' not in st.session_state:
 	st.session_state.select_row = False
 # if 'connect_dba' not in st.session_state:
@@ -81,7 +81,7 @@ def read_downloaded_property(ecg_property):
 
 add_selectbox = st.sidebar.selectbox(
     "Task",
-    ("Home page", "Import source", "Extract annotations", "Resample signal")
+    ("Home page", "Import source", "Download Channel", "Extract annotations")
 )
 
 add_selectbox = add_selectbox.lower()
@@ -99,21 +99,24 @@ if add_selectbox == "import source":
         # Read Final ECG properties
         if ecg_property:
             read_final_property(ecg_property)
-elif add_selectbox == "extract annotations":
-    # list_channel, sample_rate, export_unit, clicked = ann_extract.load_form()
-    list_channel, clicked = ann_extract.load_form()
+elif add_selectbox == "download channel":
+    # list_channel, sample_rate, export_unit, clicked = download_channel.load_form()
+    list_channel, clicked = download_channel.load_form()
     if clicked or st.session_state.select_row:
-        st.session_state.select_row = True
+        if len(list_channel) > 0:
+            st.session_state.select_row = True
 
-        # Open MongoDB connection
-        my_db, my_main_col = con.connect_mongodb()
+            # Open MongoDB connection
+            my_db, my_main_col = con.connect_mongodb()
 
-        # Load result after list channels selection
-        processor.load_source_data(my_main_col, list_channel)
-elif add_selectbox == "resample signal":
-    dir_name, format_desc, clicked = resample_signal.load_form()
-    if clicked or st.session_state.resample_signal:
-        st.session_state.resample_signal = True
+            # Load result after list channels selection
+            processor.load_source_data(my_db, my_main_col, list_channel)
+        else:
+            st.sidebar.warning('Please select channel(s)!')
+elif add_selectbox == "extract annotations":
+    dir_name, format_desc, clicked = extract_anno.load_form()
+    if clicked or st.session_state.extract_anno:
+        st.session_state.extract_anno = True
 
         # Process to get the list of files when selecting the folder
         file_list, file_name = processor.process_file(dir_name)
