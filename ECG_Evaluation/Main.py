@@ -31,7 +31,7 @@ processor = Processor()
 def read_property(dir_name, file_name, file_list, format_desc):
     # Read source ecg property    
     if format_desc == 'wfdb':
-        processor.add(WFDBController(dir_name, file_name))
+        processor.add(WFDBController(dir_name, file_name, file_list))
     else:
         processor.add(SciPyController(dir_name, file_name, file_list))
     return processor.get_source_property()
@@ -54,16 +54,17 @@ def read_final_property(ecg_property):
             # Open MongoDB connection
             my_db, my_main_col = con.connect_mongodb()
 
-            list_file_id = []
-            for item in file_list:
-                # Save ECG file to MongoDB
-                file_id = scraper.save_ecg_file(my_db, item[1], item[0])
-                if file_id:
-                    list_file_id.append([file_id])
-            ecg_id = scraper.save_ecg_property(my_main_col, final_ecg_property, list_file_id)
+            # Save ECG properties
+            ecg_id = scraper.save_ecg_property(my_main_col, final_ecg_property)
             if ecg_id:
-                print('ecg_id: ' + str(ecg_id))
-                st.success('Imported successfully!')
+                list_file_id = []
+                for item in file_list:
+                    # Save ECG file to MongoDB
+                    file_id = scraper.save_ecg_file(my_db, item[1], item[0], ecg_id)
+                    if file_id:
+                        list_file_id.append([file_id])
+                if len(list_file_id) == final_ecg_property.ecg:
+                    st.success('Imported successfully!')
 
 def read_downloaded_property(ecg_property):
     processor.render_property(ecg_property)

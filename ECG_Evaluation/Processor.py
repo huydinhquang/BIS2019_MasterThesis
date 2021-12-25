@@ -87,10 +87,10 @@ class Processor:
                 sample=record[cons.ECG_SAMPLE],
                 time=record[cons.ECG_TIME],
                 sample_rate=record[cons.ECG_SAMPLE_RATE],
-                ecg=len(record[cons.ECG_ECG]),
+                ecg=record[cons.ECG_ECG],
                 created_date=common.convert_timestamp_to_datetime(record[cons.ECG_CREATED_DATE]),
                 modified_date=common.convert_timestamp_to_datetime(record[cons.ECG_MODIFIED_DATE]),
-                id=str(record[cons.ECG_ID])
+                id=str(record[cons.ECG_ID_SHORT])
             ))
             
         header_table = [

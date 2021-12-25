@@ -8,7 +8,7 @@ CONFIGURE = 'configure'
 FORMAT_DESCRIPTOR = 'format_descriptor'
 CHANNEL_NAME = 'channel_name'
 
-ECG_ID = '_id'
+ECG_ID_SHORT = '_id'
 ECG_CHANNEL = 'channel'
 ECG_CREATED_DATE = 'created_date'
 ECG_MODIFIED_DATE = 'modified_date'
@@ -24,6 +24,9 @@ SINGAL_NAME = 'sig_name'
 SAMPLING_FREQUENCY = 'fs'
 
 CONS_DATE_STR = '$date'
+CONS_SET_STR = '$set'
+
+ECG_ID = 'ecg_id'
 
 # ECG Column Header
 HEADER_SOURCE = 'Source'
