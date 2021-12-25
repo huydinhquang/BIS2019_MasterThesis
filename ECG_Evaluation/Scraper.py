@@ -39,9 +39,9 @@ def find_by_query(my_col, query_type, field_name, list_item):
     return my_col.find(query)
 
 
-def retrieve_ecg_file(my_db, list_ecg_id):
+def retrieve_ecg_file(my_db, list_ecg_id:ECG):
     data = find_by_query(
-        my_db.fs.files, cons.CONS_QUERYIN_STR, cons.ECG_ID, list_ecg_id)
+        my_db.fs.files, cons.CONS_QUERYIN_STR, cons.ECG_ID, list_ecg_id.id)
     fs = connect_gridfs(my_db)
     files = []
     for item in data:

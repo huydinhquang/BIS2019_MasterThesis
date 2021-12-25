@@ -1,5 +1,6 @@
 import os
 from Controllers.FilesModel import Files
+from Controllers.ECGModel import ECG
 import Controllers.Constants as cons
 
 def switch_format_desc(value):
@@ -13,17 +14,15 @@ def switch_format_desc(value):
 def get_file_name(file):
     return file.split(".")[0]
 
-def write_file(folder_download, item: Files):
-    file_name = get_file_name(item.file_name)
-    download_location = os.path.join(folder_download, f'{item.ecg_id}{cons.CONS_UNDERSCORE}{file_name}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}')
+def write_file(download_location, file_name, output_data):
     create_folder(download_location)
-    file_location = os.path.join(download_location, item.file_name)
+    file_location = os.path.join(download_location, file_name)
     output = open(file_location, 'wb')
-    output.write(item.output_data)
+    output.write(output_data)
     output.close()
 
-#def get_channel_index(channel, item: Files):
-
+def get_channel_index(channel, list_channel):
+    return [channel.index(x) for x in list_channel]
 
 def create_folder(path):
     # Check whether the specified path exists or not

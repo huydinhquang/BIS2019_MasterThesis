@@ -127,16 +127,23 @@ class Processor:
                 # print(selected_rows.to_markdown()) 
                 list_ecg_id = []
                 for index, row in selected_rows.iterrows():
-                    # my_db.fs.files.find
-                    list_ecg_id.append(ObjectId(row[cons.HEADER_ID]))
+                    list_header_channel = common.convert_string_to_list(row[cons.HEADER_CHANNEL])
+                    print(list_header_channel)
+                    channel_index = helper.get_channel_index(list_header_channel, list_channel)
+                    print(channel_index)
+                    list_ecg_id.append(
+                        ECG(id=ObjectId(row[cons.HEADER_ID], channel=channel_index, file_name=row[cons.HEADER_FILENAME])))
                     # print(value)
                 if len(list_ecg_id) > 0:
                     print(list_ecg_id)
                     list_files = scraper.retrieve_ecg_file(my_db, list_ecg_id)
                     for x in list_files:
-                        helper.write_file(folder_download, x)
-                    # for x in list_channel:
-                    #     helper.get_channel_index(x, )
+                        file_name = helper.get_file_name(x.file_name)
+                        download_location = os.path.join(folder_download, f'{x.ecg_id}{cons.CONS_UNDERSCORE}{file_name}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}')
+                        helper.write_file(download_location, file_name, x.output_data)
+                    for x in list_ecg_id:
+                        download_location = os.path.join(folder_download, f'{x.id}{cons.CONS_UNDERSCORE}{x.file_name}')
+                        helper.create_folder(download_location, x)
                     st.success('Download completed!')
 
 
@@ -157,6 +164,9 @@ class Processor:
         plt.ylabel("ECG in mV")
         st.pyplot(plt)
 
-# if 'select_row' not in st.session_state:
-# 	st.session_state.select_row = False
-
+    def write_channel(self, download_location, ecg_property : ECG):
+        # Write channel to the folder
+        folder_temp = f'{download_location}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}'
+        signals, fields = wfdb.rdsamp(folder_temp, channels=ecg_property.channel)
+        wfdb.wrsamp(record_name=ecg_property.file_name, fs=ecg_property.sample_rate, units=[
+                    'mV'], sig_name=ecg_property.channel, p_signal=signals, write_dir=download_location)

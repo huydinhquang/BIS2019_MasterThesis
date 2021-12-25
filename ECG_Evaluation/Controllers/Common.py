@@ -23,6 +23,9 @@ def convert_timestamp_to_datetime(value):
     timestamp_formatted = timestamp.strftime("%d.%m.%Y %H:%M:%S")
     return timestamp_formatted
 
+def convert_string_to_list(string):
+    return list(string.split(', '))
+
 # def my_handler(x):
 #     # st.write(x)
 #     if isinstance(x, datetime.datetime):
