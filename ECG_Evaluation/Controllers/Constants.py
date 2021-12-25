@@ -22,11 +22,18 @@ ECG_TOTAL_CHANNELS = 'total_channels'
 
 SINGAL_NAME = 'sig_name'
 SAMPLING_FREQUENCY = 'fs'
+CONS_OUTPUT_DATA = 'output_data'
+CONS_TEMP_STR = 'temp'
 
 CONS_DATE_STR = '$date'
 CONS_SET_STR = '$set'
+CONS_QUERYIN_STR = '$in'
 
+# ECG collection column name
 ECG_ID = 'ecg_id'
+
+# Files collection column name
+FILE_ID_SHORT = '_id'
 
 # ECG Column Header
 HEADER_SOURCE = 'Source'
@@ -39,3 +46,6 @@ HEADER_SAMPLE_RATE = 'Sample rate'
 HEADER_TIME = 'Time'
 HEADER_SAMPLES = 'Samples'
 HEADER_ECG = 'ECG files'
+
+# One Character 
+CONS_UNDERSCORE = '_'

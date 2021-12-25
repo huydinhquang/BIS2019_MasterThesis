@@ -60,7 +60,7 @@ def read_final_property(ecg_property):
                 list_file_id = []
                 for item in file_list:
                     # Save ECG file to MongoDB
-                    file_id = scraper.save_ecg_file(my_db, item[1], item[0], ecg_id)
+                    file_id = scraper.save_ecg_file(my_db, item[1], item[0], ecg_id, final_ecg_property)
                     if file_id:
                         list_file_id.append([file_id])
                 if len(list_file_id) == final_ecg_property.ecg:

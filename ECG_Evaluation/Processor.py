@@ -1,3 +1,5 @@
+from bson.objectid import ObjectId
+from pymongo import helpers
 import streamlit as st
 from Controllers.ECGModel import ECG
 import wfdb
@@ -10,6 +12,7 @@ from pathlib import Path
 import shutil
 import numpy as np
 import matplotlib.pyplot as plt
+import Controllers.Helper as helper
 import Views.DBImport as db_import
 import Views.DownloadChannel as download_channel
 import Scraper as scraper
@@ -35,7 +38,7 @@ class Processor:
                 file_list.append([file])
                 dir_list.append([os.path.join(dir_name,file)])
                 if not file_name:
-                    file_name = file.split(".")[0]
+                    file_name = helper.get_file_name(file)
         if not file_list or not dir_list:
             st.error('Cannot read source folder!')
             st.stop()
@@ -78,8 +81,8 @@ class Processor:
         # st.session_state.select_row = True
         count = 0
         list_ecg = []
-        query = {cons.ECG_CHANNEL:{"$in":list_channel}}
-        for record in my_col.find(query):
+        data = scraper.find_by_query(my_col, cons.CONS_QUERYIN_STR, cons.ECG_CHANNEL, list_channel)
+        for record in data:
             count = count + 1
             list_ecg.append(ECG(
                 source=record[cons.ECG_SOURCE],
@@ -122,12 +125,21 @@ class Processor:
             folder_download, clicked_download = download_channel.render_download_section()
             if clicked_download:
                 # print(selected_rows.to_markdown()) 
+                list_ecg_id = []
                 for index, row in selected_rows.iterrows():
                     # my_db.fs.files.find
-                    print(row[cons.HEADER_ID])
-                    scraper.retrieve_ecg_file(my_db, row[cons.HEADER_ID])
+                    list_ecg_id.append(ObjectId(row[cons.HEADER_ID]))
                     # print(value)
-            
+                if len(list_ecg_id) > 0:
+                    print(list_ecg_id)
+                    list_files = scraper.retrieve_ecg_file(my_db, list_ecg_id)
+                    for x in list_files:
+                        helper.write_file(folder_download, x)
+                    # for x in list_channel:
+                    #     helper.get_channel_index(x, )
+                    st.success('Download completed!')
+
+
     def visualize_chart(self, signals, fs_target, fs):
         # for channel in range(channels):        
         #     wfdb.plot_items(signal=signals, fs=fields['fs'], title='Huy Test')
