@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import Views.DBImport as db_import
 import Views.DownloadChannel as download_channel
+import Scraper as scraper
 
 class Processor:
     def __init__(self):
@@ -124,6 +125,8 @@ class Processor:
                 for index, row in selected_rows.iterrows():
                     # my_db.fs.files.find
                     print(row[cons.HEADER_ID])
+                    scraper.retrieve_ecg_file(my_db, row[cons.HEADER_ID])
+                    # print(value)
             
     def visualize_chart(self, signals, fs_target, fs):
         # for channel in range(channels):        
