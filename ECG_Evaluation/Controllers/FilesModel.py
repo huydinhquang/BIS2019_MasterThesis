@@ -1,5 +1,5 @@
 class Files():
-    def __init__(self, file_name, output_data, ecg_id, channel):
+    def __init__(self, file_name=None, output_data=None, ecg_id=None, channel=None):
         self.file_name = file_name
         self.output_data = output_data
         self.ecg_id = ecg_id

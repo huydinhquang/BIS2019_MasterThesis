@@ -48,10 +48,7 @@ class Processor:
         for e in self.ecg_list:
             return e.get_source_property()
     
-    # def get_source_property_constraint(self):
-    #     for e in self.ecg_list:
-    #         return e.get_source_property_constraint()
-
+    
     def render_property(self, ecg_property : ECG):
         # Count number of channels
         total_channels = len(ecg_property.sample[0])
@@ -65,7 +62,7 @@ class Processor:
             return None
         else:
             return ECG(
-                id=None,
+                #id=None,
                 source=value[cons.ECG_SOURCE],
                 file_name=ecg_property.file_name,
                 channel=value[cons.ECG_CHANNEL],
@@ -125,26 +122,49 @@ class Processor:
             folder_download, clicked_download = download_channel.render_download_section()
             if clicked_download:
                 # print(selected_rows.to_markdown()) 
-                list_ecg_id = []
+                list_selected_ecg = []
                 for index, row in selected_rows.iterrows():
                     list_header_channel = common.convert_string_to_list(row[cons.HEADER_CHANNEL])
-                    print(list_header_channel)
+                    # print(list_header_channel)
                     channel_index = helper.get_channel_index(list_header_channel, list_channel)
-                    print(channel_index)
-                    list_ecg_id.append(
-                        ECG(id=ObjectId(row[cons.HEADER_ID], channel=channel_index, file_name=row[cons.HEADER_FILENAME])))
+                    # print(channel_index)
+                    list_selected_ecg.append(ECG(
+                        file_name=row[cons.HEADER_FILENAME],
+                        channel=channel_index,
+                        id=ObjectId(row[cons.HEADER_ID]),
+                        sample_rate=row[cons.HEADER_SAMPLE_RATE],
+                    ))
                     # print(value)
-                if len(list_ecg_id) > 0:
-                    print(list_ecg_id)
-                    list_files = scraper.retrieve_ecg_file(my_db, list_ecg_id)
+                if len(list_selected_ecg) > 0:
+                    # Get only id of the selected ECG to query in MongoDB
+                    list_selected_ecg_id = [x.id for x in list_selected_ecg]
+                    print(list_selected_ecg_id)
+                    # Search by list of ECG Id to retrieve ECG files
+                    list_files = scraper.retrieve_ecg_file(my_db, list_selected_ecg_id)
+                    # Download and store the ECG files from MongoDB to local
+                    # Create a folder for each file name to store all related ECG files (Ex: *.dat, *.hea, *.xyz)
                     for x in list_files:
                         file_name = helper.get_file_name(x.file_name)
                         download_location = os.path.join(folder_download, f'{x.ecg_id}{cons.CONS_UNDERSCORE}{file_name}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}')
-                        helper.write_file(download_location, file_name, x.output_data)
-                    for x in list_ecg_id:
+                        helper.write_file(download_location, x.file_name, x.output_data)
+                    for x in list_selected_ecg:
+                        # print(x.file_name)
+                        # print(x.id)
                         download_location = os.path.join(folder_download, f'{x.id}{cons.CONS_UNDERSCORE}{x.file_name}')
-                        helper.create_folder(download_location, x)
+                        helper.create_folder(download_location)
+                        self.write_channel(download_location, list_channel, x)
                     st.success('Download completed!')
+
+    def write_channel(self, download_location, list_channel, ecg_property : ECG):
+            # Extract only selected channels to the folder
+            # Retrieve the folder temp, which has all original ECG files
+            folder_temp = f'{download_location}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}'
+            # Build the file name with folder path to let WFDB library read the ECG signals
+            file_name = os.path.join(folder_temp, ecg_property.file_name)
+            signals, fields = wfdb.rdsamp(file_name, channels=ecg_property.channel)
+            # Write new ECG files with only selected channels
+            wfdb.wrsamp(record_name=ecg_property.file_name, fs=ecg_property.sample_rate, units=[
+                        'mV'], sig_name=list_channel, p_signal=signals, write_dir=download_location)
 
 
     def visualize_chart(self, signals, fs_target, fs):
@@ -164,9 +184,4 @@ class Processor:
         plt.ylabel("ECG in mV")
         st.pyplot(plt)
 
-    def write_channel(self, download_location, ecg_property : ECG):
-        # Write channel to the folder
-        folder_temp = f'{download_location}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}'
-        signals, fields = wfdb.rdsamp(folder_temp, channels=ecg_property.channel)
-        wfdb.wrsamp(record_name=ecg_property.file_name, fs=ecg_property.sample_rate, units=[
-                    'mV'], sig_name=ecg_property.channel, p_signal=signals, write_dir=download_location)
+    

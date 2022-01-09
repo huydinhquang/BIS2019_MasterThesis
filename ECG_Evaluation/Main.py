@@ -8,7 +8,7 @@ from Controllers.WFDBController import WFDBController
 from Controllers.SciPyController import SciPyController
 from Processor import Processor
 
-st.title('Test System')
+st.title('ECG System')
 
 # Initialization
 if 'get_data' not in st.session_state:

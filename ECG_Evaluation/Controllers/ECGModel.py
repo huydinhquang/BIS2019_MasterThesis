@@ -1,5 +1,5 @@
 class ECG():
-    def __init__(self, source, file_name, channel, sample, time, sample_rate, ecg, created_date, modified_date, id):
+    def __init__(self, source=None, file_name=None, channel=None, sample=None, time=None, sample_rate=None, ecg=None, created_date=None, modified_date=None, id=None):
         self.source = source
         self.file_name = file_name
         self.channel = channel

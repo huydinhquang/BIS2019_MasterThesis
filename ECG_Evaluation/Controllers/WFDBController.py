@@ -24,8 +24,6 @@ class WFDBController(ECGController):
         time = round(len(signals) / fs)
         channels = [item.upper() for item in fields[cons.SINGAL_NAME]] 
         return ECG(
-            id=None,
-            source=None,
             file_name=self.file_name,
             channel=channels,
             sample=signals,
