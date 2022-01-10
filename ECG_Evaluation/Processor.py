@@ -44,6 +44,10 @@ class Processor:
             st.stop()
         return np.concatenate((file_list, dir_list), axis=1), file_name
 
+    def process_folder(self, dir_name):
+        file_list = [ name for name in os.listdir(dir_name) if os.path.isdir(os.path.join(dir_name, name)) and cons.CONS_TEMP_STR not in name]
+        return file_list
+
     def get_source_property(self):
         for e in self.ecg_list:
             return e.get_source_property()
@@ -166,6 +170,18 @@ class Processor:
             wfdb.wrsamp(record_name=ecg_property.file_name, fs=ecg_property.sample_rate, units=[
                         'mV'], sig_name=list_channel, p_signal=signals, write_dir=download_location)
 
+
+    def load_download_source(self, file_list):
+        header_table = [
+            cons.HEADER_FILENAME
+        ]
+
+        df = pd.DataFrame(file_list)
+        df.columns = header_table
+
+        count = len(file_list)
+        st.write('### Data sources', df)
+        st.info('Total items: ' + str(count))
 
     def visualize_chart(self, signals, fs_target, fs):
         # for channel in range(channels):        

@@ -115,16 +115,17 @@ elif add_selectbox == "download channel":
         else:
             st.sidebar.warning('Please select channel(s)!')
 elif add_selectbox == "extract annotations":
-    dir_name, format_desc, clicked = extract_anno.load_form()
+    dir_name, clicked = extract_anno.load_form()
     if clicked or st.session_state.extract_anno:
         st.session_state.extract_anno = True
 
         # Process to get the list of files when selecting the folder
-        file_list, file_name = processor.process_file(dir_name)
+        file_list = processor.process_folder(dir_name)
 
         # Read ECG properties when user selects a source
-        ecg_property = read_property(dir_name, file_name, file_list, format_desc.lower())
+        # ecg_property = read_property(dir_name, file_name, file_list, format_desc.lower())
 
+        processor.load_download_source(file_list)
         # Read ECG properties
-        if ecg_property:
-            read_downloaded_property(ecg_property)
+        # if ecg_property:
+        #     read_downloaded_property(ecg_property)
