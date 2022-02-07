@@ -2,7 +2,8 @@ MONGOCONNECTIONSTR = 'mongo'
 MONGODB = 'mongodb'
 DB_NAME = 'db_name'
 COLLECTION_MAIN_NAME = 'collection_main_name'
-# COLLECTION_CHANNEL_NAME = 'collection_channel_name'
+COLLECTION_CHANNEL_NAME = 'collection_channel_name'
+COLLECTION_RECORD_SET_NAME = 'collection_record_set_name'
 
 CONFIGURE = 'configure'
 FORMAT_DESCRIPTOR = 'format_descriptor'
@@ -28,6 +29,7 @@ CONS_TEMP_STR = 'temp'
 CONS_DATE_STR = '$date'
 CONS_SET_STR = '$set'
 CONS_QUERYIN_STR = '$in'
+CONS_QUERYREGEX_STR = '$regex'
 
 # ECG collection column name
 ECG_ID = 'ecg_id'
@@ -49,3 +51,12 @@ HEADER_ECG = 'ECG files'
 
 # One Character 
 CONS_UNDERSCORE = '_'
+
+# Global
+CONS_CHANNEL = 'channel'
+CONS_CREATED_DATE = 'created_date'
+CONS_MODIFIED_DATE = 'modified_date'
+CONS_ID_SHORT = '_id'
+
+# Record Set
+CONS_RECORD_SET_NAME = 'record_set_name'

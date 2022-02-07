@@ -35,9 +35,11 @@ def save_ecg_file(my_db, file_path, file_name, ecg_id, final_ecg_property: ECG):
 
 
 def find_by_query(my_col, query_type, field_name, list_item):
-    query = {field_name: {query_type: list_item}}
+    query = {field_name: {query_type: list_item, '$options': 'i'}}
     return my_col.find(query)
 
+def find(my_col):
+    return my_col.find()
 
 def retrieve_ecg_file(my_db, list_selected_ecg_id):
     data = find_by_query(

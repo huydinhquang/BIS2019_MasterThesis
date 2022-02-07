@@ -23,6 +23,10 @@ def convert_timestamp_to_datetime(value):
     timestamp_formatted = timestamp.strftime("%d.%m.%Y %H:%M:%S")
     return timestamp_formatted
 
+def convert_time_to_datetime(value):
+    timestamp_formatted = value.strftime("%d.%m.%Y %H:%M:%S")
+    return timestamp_formatted
+
 def convert_string_to_list(string):
     return list(string.split(', '))
 

@@ -1,12 +1,18 @@
 import streamlit as st
+import Views.ManageChannelView as manage_channel_view
+import Views.TemplateExportationView as template_export_view
 import Views.DBImport as db_import
 import Views.DownloadChannel as download_channel
 import Views.ExtractAnnotations as extract_anno
 import Controllers.MongoDBConnection as con
 import Scraper as scraper
+import Scrapers.ManageChannelScraper as manage_channel_scraper
+import Scrapers.TemplateExportationScraper as template_export_scraper
 from Controllers.WFDBController import WFDBController
 from Controllers.SciPyController import SciPyController
 from Processor import Processor
+from Processors.ManageChannelProcessor import ManageChannelProcessor
+from Processors.RecordSetProcessor import RecordSetProcessor
 
 st.title('ECG System')
 
@@ -15,10 +21,12 @@ if 'get_data' not in st.session_state:
 	st.session_state.get_data = False
 if 'extract_anno' not in st.session_state:
 	st.session_state.extract_anno = False
-if 'select_row' not in st.session_state:
-	st.session_state.select_row = False
-# if 'connect_dba' not in st.session_state:
-# 	st.session_state.connect_dba = False
+if 'load_source_list' not in st.session_state:
+	st.session_state.load_source_list = False
+if 'filter_source' not in st.session_state:
+	st.session_state.filter_source = False
+if 'load_channel_list' not in st.session_state:
+	st.session_state.load_channel_list = False
 
 # def connect_db():
 #     if not st.session_state.connect_dba:
@@ -27,6 +35,8 @@ if 'select_row' not in st.session_state:
 #         return con.connect_mongodb(), con.connect_mongo_collectiondb()
 
 processor = Processor()
+manage_channel_processor = ManageChannelProcessor()
+record_set_processor = RecordSetProcessor()
 
 def read_property(dir_name, file_name, file_list, format_desc):
     # Read source ecg property    
@@ -82,11 +92,31 @@ def read_downloaded_property(ecg_property):
 
 add_selectbox = st.sidebar.selectbox(
     "Task",
-    ("Home page", "Import source", "Download Channel", "Extract annotations")
+    ("Home page", "Channel Management", "Source Importation", "Record Set", "Template Exportation", "Signal Extraction")
 )
 
 add_selectbox = add_selectbox.lower()
-if add_selectbox == "import source":
+if add_selectbox == "channel management":
+    new_channel, add_clicked, load_list_clicked = manage_channel_view.load_form()
+
+    if load_list_clicked:
+        # Open MongoDB connection
+        my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
+
+        # Load all channels
+        manage_channel_processor.load_list_channel(channel_col)
+    
+    if add_clicked:
+        # Open MongoDB connection
+        my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
+
+        channel_id = manage_channel_scraper.add_channel(channel_col, new_channel)
+        if channel_id:
+            st.success('Added successfully!')
+        else:
+            st.warning('Please try again!')
+
+elif add_selectbox == "source importation":
     dir_name, format_desc, clicked = db_import.load_form()
     if clicked or st.session_state.get_data:
         st.session_state.get_data = True
@@ -100,21 +130,42 @@ if add_selectbox == "import source":
         # Read Final ECG properties
         if ecg_property:
             read_final_property(ecg_property)
-elif add_selectbox == "download channel":
+elif add_selectbox == "record set":
     # list_channel, sample_rate, export_unit, clicked = download_channel.load_form()
-    list_channel, clicked = download_channel.load_form()
-    if clicked or st.session_state.select_row:
-        if len(list_channel) > 0:
-            st.session_state.select_row = True
+    load_source_list_clicked = download_channel.load_form()
+    if load_source_list_clicked or st.session_state.load_source_list:
+        st.session_state.load_source_list = True
 
-            # Open MongoDB connection
-            my_db, my_main_col = con.connect_mongodb()
+        # Open MongoDB connection
+        my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
 
-            # Load result after list channels selection
-            processor.load_source_data(my_db, my_main_col, list_channel)
+        # Load result after list channels selection
+        record_set_id = record_set_processor.load_source_data(my_main_col, record_set_col)
+
+        if record_set_id:
+            st.success('Added successfully!')
+elif add_selectbox == "template exportation":
+    target_sample_rate, duration = template_export_view.load_form()
+
+    # Open MongoDB connection
+    my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
+
+    # Load all channels
+    list_channel = manage_channel_processor.load_list_channel(channel_col)
+
+    add_clicked, load_list_clicked = template_export_view.load_button()
+
+    if add_clicked and len(list_channel) > 0:
+        # Open MongoDB connection
+        my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
+
+        template_id = template_export_scraper.add_template(channel_col, target_sample_rate, duration, list_channel)
+        if template_id:
+            st.success('Added successfully!')
         else:
-            st.sidebar.warning('Please select channel(s)!')
-elif add_selectbox == "extract annotations":
+            st.warning('Please try again!')
+
+elif add_selectbox == "signal extraction":
     dir_name, clicked = extract_anno.load_form()
     if clicked or st.session_state.extract_anno:
         st.session_state.extract_anno = True
