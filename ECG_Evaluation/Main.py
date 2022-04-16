@@ -1,9 +1,10 @@
 import streamlit as st
+from ECG_Evaluation.Processors.ExportDataProcessor import ExportDataProcessor
 import Views.ManageChannelView as manage_channel_view
 import Views.TemplateExportationView as template_export_view
 import Views.DBImport as db_import
 import Views.DownloadChannel as download_channel
-import Views.ExtractAnnotations as extract_anno
+import Views.ExportDataView as export_data
 import Controllers.MongoDBConnection as con
 import Scraper as scraper
 import Scrapers.ManageChannelScraper as manage_channel_scraper
@@ -13,6 +14,7 @@ from Controllers.SciPyController import SciPyController
 from Processor import Processor
 from Processors.ManageChannelProcessor import ManageChannelProcessor
 from Processors.RecordSetProcessor import RecordSetProcessor
+import Controllers.Constants as cons
 
 st.title('ECG System')
 
@@ -37,6 +39,7 @@ if 'load_channel_list' not in st.session_state:
 processor = Processor()
 manage_channel_processor = ManageChannelProcessor()
 record_set_processor = RecordSetProcessor()
+export_data_processor = ExportDataProcessor()
 
 def read_property(dir_name, file_name, file_list, format_desc):
     # Read source ecg property    
@@ -62,7 +65,7 @@ def read_final_property(ecg_property):
         import_source = st.button('Import source')
         if import_source:
             # Open MongoDB connection
-            my_db, my_main_col = con.connect_mongodb()
+            my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
 
             # Save ECG properties
             ecg_id = scraper.save_ecg_property(my_main_col, final_ecg_property)
@@ -92,7 +95,7 @@ def read_downloaded_property(ecg_property):
 
 add_selectbox = st.sidebar.selectbox(
     "Task",
-    ("Home page", "Channel Management", "Source Importation", "Record Set", "Template Exportation", "Signal Extraction")
+    ("Home page", "Channel Management", "Source Importation", "Record Set", "Exporting Template", "Export Data")
 )
 
 add_selectbox = add_selectbox.lower()
@@ -137,46 +140,56 @@ elif add_selectbox == "record set":
         st.session_state.load_source_list = True
 
         # Open MongoDB connection
-        my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
+        db_result = con.connect_mongodb()
 
         # Load result after list channels selection
-        record_set_id = record_set_processor.load_source_data(my_main_col, record_set_col)
+        record_set_id = record_set_processor.load_source_data(db_result[cons.COLLECTION_ECG_NAME], db_result[cons.COLLECTION_RECORD_SET_NAME])
 
         if record_set_id:
             st.success('Added successfully!')
-elif add_selectbox == "template exportation":
-    target_sample_rate, duration = template_export_view.load_form()
+elif add_selectbox == "exporting template":
+    form_result = template_export_view.load_form()
 
     # Open MongoDB connection
-    my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
+    # db_result = con.connect_mongodb()
 
     # Load all channels
-    list_channel = manage_channel_processor.load_list_channel(channel_col)
+    # list_channel = manage_channel_processor.load_list_channel(channel_col)
 
-    add_clicked, load_list_clicked = template_export_view.load_button()
+    # add_clicked, load_list_clicked = template_export_view.load_button()
 
-    if add_clicked and len(list_channel) > 0:
+    # Retrieve data from the view
+    create_clicked = form_result[cons.CONS_BUTTON_CREATE]
+    list_channel = form_result[cons.CONS_CHANNEL]
+    exp_tem_name = form_result[cons.CONS_EXPORTING_TEMPLATE_NAME]
+
+    if create_clicked and exp_tem_name and len(list_channel) > 0:
         # Open MongoDB connection
-        my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
-
-        template_id = template_export_scraper.add_template(channel_col, target_sample_rate, duration, list_channel)
+        db_result = con.connect_mongodb()
+        template_id = template_export_scraper.add_template(db_result[cons.COLLECTION_TEMPLATE_EXPORTATION_NAME], form_result)
         if template_id:
             st.success('Added successfully!')
         else:
             st.warning('Please try again!')
 
-elif add_selectbox == "signal extraction":
-    dir_name, clicked = extract_anno.load_form()
-    if clicked or st.session_state.extract_anno:
+elif add_selectbox == "export data":
+    load_data_clicked = export_data.load_form()
+    if load_data_clicked or st.session_state.extract_anno:
         st.session_state.extract_anno = True
 
+        # Open MongoDB connection
+        db_result = con.connect_mongodb()
+
+        # Load result after list channels selection
+        record_set_id = export_data_processor.load_record_set_data(db_result[cons.COLLECTION_RECORD_SET_NAME])
+        
         # Process to get the list of files when selecting the folder
-        file_list = processor.process_folder(dir_name)
+        # file_list = processor.process_folder(dir_name)
 
         # Read ECG properties when user selects a source
         # ecg_property = read_property(dir_name, file_name, file_list, format_desc.lower())
 
-        processor.load_download_source(file_list)
+        # processor.load_download_source(file_list)
         # Read ECG properties
         # if ecg_property:
         #     read_downloaded_property(ecg_property)

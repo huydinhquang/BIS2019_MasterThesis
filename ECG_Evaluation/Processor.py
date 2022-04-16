@@ -54,25 +54,43 @@ class Processor:
     
     
     def render_property(self, ecg_property : ECG):
-        # Count number of channels
+        # Count number of channels from source
         total_channels = len(ecg_property.sample[0])
 
-        value = db_import.render_property(ecg_property, total_channels)
+        # Get result after rendering property
+        # result = {
+        #    cons.ECG_SOURCE: source,
+        #    cons.ECG_CHANNEL: channel,
+        #    cons.ECG_SAMPLE_RATE: sample_rate,
+        #    cons.ECG_TIME: time,
+        #    cons.ECG_TOTAL_CHANNELS: total_channels
+        #   }
+        result = db_import.render_property(ecg_property, total_channels)
+
+        # Count number of channels when missing recording metadata
+        # User will enter the channel manually (Ex: I;II;III)
+        is_channel_from_source = result[cons.ECG_CHANNEL_TEXT]
+        channel = result[cons.ECG_CHANNEL]
+        
+        # Process to get list of channel when user enters manually
+        if (not is_channel_from_source):
+            channel = common.convert_string_to_list(channel, cons.CONS_SEMICOLON)
             
         # Check input channels vs total channels of source
-        if (len(value[cons.ECG_CHANNEL]) == 0 or
-            (ecg_property.channel and not len(ecg_property.channel) == len(value[cons.ECG_CHANNEL]))):
+        # First check is used for channels, which entered manually
+        # Second check is used for channels, which came from the source
+        if ((not is_channel_from_source and ((channel[0] == '' and total_channels == len(channel)) or (not channel[0] == '' and not total_channels == len(channel)))) or 
+            ecg_property.channel and not len(ecg_property.channel) == len(channel)):
             st.error('Input channels must be equal to the total channels of the source!')
             return None
         else:
             return ECG(
-                #id=None,
-                source=value[cons.ECG_SOURCE],
+                source=result[cons.ECG_SOURCE],
                 file_name=ecg_property.file_name,
-                channel=value[cons.ECG_CHANNEL],
+                channel=channel,
                 sample=len(ecg_property.sample),
-                time=value[cons.ECG_TIME],
-                sample_rate=value[cons.ECG_SAMPLE_RATE],
+                time=result[cons.ECG_TIME],
+                sample_rate=result[cons.ECG_SAMPLE_RATE],
                 ecg=ecg_property.ecg,
                 created_date=ecg_property.created_date,
                 modified_date=ecg_property.modified_date
@@ -128,7 +146,7 @@ class Processor:
                 # print(selected_rows.to_markdown()) 
                 list_selected_ecg = []
                 for index, row in selected_rows.iterrows():
-                    list_header_channel = common.convert_string_to_list(row[cons.HEADER_CHANNEL])
+                    list_header_channel = common.convert_string_to_list(row[cons.HEADER_CHANNEL], cons.CONS_COMMA, True)
                     # print(list_header_channel)
                     channel_index = helper.get_channel_index(list_header_channel, list_channel)
                     # print(channel_index)

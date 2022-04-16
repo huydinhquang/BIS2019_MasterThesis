@@ -1,14 +1,16 @@
 MONGOCONNECTIONSTR = 'mongo'
 MONGODB = 'mongodb'
 DB_NAME = 'db_name'
-COLLECTION_MAIN_NAME = 'collection_main_name'
+COLLECTION_ECG_NAME = 'collection_ecg_name'
 COLLECTION_CHANNEL_NAME = 'collection_channel_name'
 COLLECTION_RECORD_SET_NAME = 'collection_record_set_name'
+COLLECTION_TEMPLATE_EXPORTATION_NAME = 'collection_template_exportation_name'
 
 CONFIGURE = 'configure'
 FORMAT_DESCRIPTOR = 'format_descriptor'
 CHANNEL_NAME = 'channel_name'
 
+# ECG Model
 ECG_ID_SHORT = '_id'
 ECG_CHANNEL = 'channel'
 ECG_CREATED_DATE = 'created_date'
@@ -20,6 +22,7 @@ ECG_SAMPLE = 'sample'
 ECG_ECG = 'ecg'
 ECG_FILE_NAME = 'file_name'
 ECG_TOTAL_CHANNELS = 'total_channels'
+ECG_CHANNEL_TEXT = 'is_channel_from_source'
 
 SINGAL_NAME = 'sig_name'
 SAMPLING_FREQUENCY = 'fs'
@@ -49,14 +52,26 @@ HEADER_TIME = 'Time'
 HEADER_SAMPLES = 'Samples'
 HEADER_ECG = 'ECG files'
 
+# RecordSet Column Header
+HEADER_RECORD_SET = 'RecordSet'
+
 # One Character 
 CONS_UNDERSCORE = '_'
+CONS_COMMA = ','
+CONS_SEMICOLON = ';'
 
 # Global
+
 CONS_CHANNEL = 'channel'
 CONS_CREATED_DATE = 'created_date'
 CONS_MODIFIED_DATE = 'modified_date'
 CONS_ID_SHORT = '_id'
+CONS_BUTTON_CREATE = 'create_clicked'
 
 # Record Set
 CONS_RECORD_SET_NAME = 'record_set_name'
+
+# Exporting Template
+CONS_EXPORTING_TEMPLATE_NAME = 'exporting_template_name'
+CONS_TARGET_SAMPLE_RATE = 'target_sample_rate'
+CONS_DURATION = 'duration'

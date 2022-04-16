@@ -12,6 +12,7 @@ class SciPyController(ECGController):
         return ECG(
             file_name=self.file_name,
             sample=signals,
+            ecg=self.file_list.shape[0], # Total number of ECG files
             created_date=self.current_date,
             modified_date=self.current_date
         )

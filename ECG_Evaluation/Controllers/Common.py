@@ -27,8 +27,12 @@ def convert_time_to_datetime(value):
     timestamp_formatted = value.strftime("%d.%m.%Y %H:%M:%S")
     return timestamp_formatted
 
-def convert_string_to_list(string):
-    return list(string.split(', '))
+def convert_string_to_list(string, separator, hasSpacebar = False):
+    if (hasSpacebar):
+        return list(string.split(f'{separator} '))
+    else:    
+        return list(string.split(f'{separator}'))
+
 
 # def my_handler(x):
 #     # st.write(x)
