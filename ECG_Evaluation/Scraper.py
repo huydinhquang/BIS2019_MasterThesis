@@ -41,6 +41,25 @@ def find_by_query(my_col, query_type, field_name, list_item):
 def find(my_col):
     return my_col.find()
 
+
+def find_with_aggregate(my_col, query_data):
+    # query = [{
+    #     "$match": {
+    #         '_id':ObjectId('625aa279ced1267d2208e9e2')
+    #     },
+    #     "$lookup": {
+    #         'from': 'ecg', 'localField': 'source', 'foreignField': 'source', 'as': 'ecg'
+    #     }
+    # }]
+    query = [
+        {
+            cons.CONS_QUERY_MATCH_QUERY: query_data[cons.CONS_QUERY_MATCH_QUERY]
+        },
+        {
+            cons.CONS_QUERY_LOOKUP_QUERY: query_data[cons.CONS_QUERY_LOOKUP_QUERY]
+        }]
+    return my_col.aggregate(query)
+
 def retrieve_ecg_file(my_db, list_selected_ecg_id):
     data = find_by_query(
         my_db.fs.files, cons.CONS_QUERYIN_STR, cons.ECG_ID, list_selected_ecg_id)

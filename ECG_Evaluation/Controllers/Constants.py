@@ -53,7 +53,12 @@ HEADER_SAMPLES = 'Samples'
 HEADER_ECG = 'ECG files'
 
 # RecordSet Column Header
-HEADER_RECORD_SET = 'RecordSet'
+HEADER_RECORD_SET = 'RecordSet name'
+
+# Exporting Template Column Header
+HEADER_EXP_TEM = 'Exporting template name'
+HEADER_TARGET_SAMPLE_RATE = 'Target sample rate'
+HEADER_DURATION = 'Duration'
 
 # One Character 
 CONS_UNDERSCORE = '_'
@@ -75,3 +80,11 @@ CONS_RECORD_SET_NAME = 'record_set_name'
 CONS_EXPORTING_TEMPLATE_NAME = 'exporting_template_name'
 CONS_TARGET_SAMPLE_RATE = 'target_sample_rate'
 CONS_DURATION = 'duration'
+
+# Query
+CONS_QUERY_FROM = 'from'
+CONS_QUERY_LOCALFIELD = 'localField'
+CONS_QUERY_FOREIGNFIELD = 'foreignField'
+CONS_QUERY_AS = 'as'
+CONS_QUERY_MATCH_QUERY = '$match'
+CONS_QUERY_LOOKUP_QUERY = '$lookup'

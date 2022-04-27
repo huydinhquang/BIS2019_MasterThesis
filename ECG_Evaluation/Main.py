@@ -1,5 +1,5 @@
 import streamlit as st
-from ECG_Evaluation.Processors.ExportDataProcessor import ExportDataProcessor
+from Processors.ExportDataProcessor import ExportDataProcessor
 import Views.ManageChannelView as manage_channel_view
 import Views.TemplateExportationView as template_export_view
 import Views.DBImport as db_import
@@ -29,6 +29,8 @@ if 'filter_source' not in st.session_state:
 	st.session_state.filter_source = False
 if 'load_channel_list' not in st.session_state:
 	st.session_state.load_channel_list = False
+if 'generate_channel' not in st.session_state:
+	st.session_state.generate_channel = False
 
 # def connect_db():
 #     if not st.session_state.connect_dba:
@@ -181,7 +183,7 @@ elif add_selectbox == "export data":
         db_result = con.connect_mongodb()
 
         # Load result after list channels selection
-        record_set_id = export_data_processor.load_record_set_data(db_result[cons.COLLECTION_RECORD_SET_NAME])
+        record_set_id = export_data_processor.load_data(db_result)
         
         # Process to get the list of files when selecting the folder
         # file_list = processor.process_folder(dir_name)

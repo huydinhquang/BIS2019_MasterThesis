@@ -2,3 +2,5 @@
 ECG_Evaluation/Controllers/__pycache__/
 ECG_Evaluation/__pycache__/
 ECG_Evaluation/Views/__pycache__/
+ECG_Evaluation/Processors/__pycache__/
+ECG_Evaluation/Scrapers/__pycache__/
