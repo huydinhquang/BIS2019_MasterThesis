@@ -20,7 +20,7 @@ class ECGController(ABC):
         pass
 
     # @abstractmethod
-    # def get_source_property_constraint(self):
+    # def get_source_property_with_condition(self):
     #     pass
 
     # @abstractmethod

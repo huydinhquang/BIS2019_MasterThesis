@@ -10,15 +10,12 @@ from pathlib import Path
 import shutil
 import numpy as np
 import matplotlib.pyplot as plt
-# import Views.DBImport as db_import
-# import Views.DownloadChannel as download_channel
 
-class WFDBController(ECGController):
-    def __init__(self, dir_name, file_name, file_list):
-        super().__init__(dir_name, file_name, file_list)
-
-    def get_source_property(self):
-        signals, fields = wfdb.rdsamp(os.path.join(self.dir_name,self.file_name))
+class WFDBHelper:
+    def get_source_property_with_condition(self, channel_target):
+        # def get_source_property_constraint(self, signal_start, signal_end, channel_target):
+        # signals, fields = wfdb.rdsamp(self.dir_name + '/' + self.file_name, sampfrom=signal_start,sampto=signal_end, channels=[channel_target])
+        signals, fields = wfdb.rdsamp(os.path.join(self.dir_name,self.file_name), channels=[channel_target])
         # headers = wfdb.rdheader(dir_name + '/' + file_name)
         fs = fields[cons.SAMPLING_FREQUENCY]
         time = round(len(signals) / fs)

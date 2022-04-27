@@ -13,6 +13,8 @@ import Views.DownloadChannel as download_channel
 import Scraper as scraper
 import Scrapers.RecordSetScraper as record_set_scraper
 from Controllers.ECGModel import ECG
+import Controllers.Helper as helper
+import os
 
 class ExportDataProcessor:
     def load_channel_list_from_record_set(self, ecg_col, record_set_col, record_set_id):
@@ -153,8 +155,50 @@ class ExportDataProcessor:
                     st.write(list_channels_str + ' from selected exporting template')
                     st.multiselect('Record: ' + x.file_name, x.channel, key=str(x.id))
 
+                folder_download = st.text_input(label='Downloadable folder:', value="C:/Users/HuyDQ/OneDrive/HuyDQ/OneDrive/MasterThesis/Thesis/DB/Download")
+
                 # Every form must have a submit button.
                 extract_clicked = st.form_submit_button("Extract data")
                 if extract_clicked:
-                    for x in ecg_data:
-                        st.write(st.session_state[x.id])
+                    self.extract_data(db_result,ecg_data, folder_download)
+
+    def extract_data(self,db_result, ecg_data:list[ECG], folder_download):
+        db= db_result[cons.DB_NAME]
+        list_selected_ecg = []
+        # Loop record in selected RecordSet
+        for x in ecg_data:
+            selected_channel = st.session_state[x.id]
+            channel_index = helper.get_channel_index(selected_channel, x.channel)
+            x.channel_index=channel_index
+
+        list_selected_ecg_id = [x.id for x in ecg_data]
+
+        # Search by list of ECG Id to retrieve ECG files
+        list_files = scraper.retrieve_ecg_file(db, list_selected_ecg_id)
+
+        # Download and store the ECG files from MongoDB to local
+        # Create a folder for each file name to store all related ECG files (Ex: *.dat, *.hea, *.xyz)
+        for x in list_files:
+            file_name = helper.get_file_name(x.file_name)
+            download_location = os.path.join(folder_download, f'{x.ecg_id}{cons.CONS_UNDERSCORE}{file_name}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}')
+            helper.write_file(download_location, x.file_name, x.output_data)
+
+        
+    #     for x in ecg_data:
+    #         # print(x.file_name)
+    #         # print(x.id)
+    #         download_location = os.path.join(folder_download, f'{x.id}{cons.CONS_UNDERSCORE}{x.file_name}')
+    #         helper.create_folder(download_location)
+    #         self.write_channel(download_location, x.channel_index, x)
+    #     st.success('Download completed!')
+
+    # def write_channel(self, download_location, list_channel, ecg_property : ECG):
+    #         # Extract only selected channels to the folder
+    #         # Retrieve the folder temp, which has all original ECG files
+    #         folder_temp = f'{download_location}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}'
+    #         # Build the file name with folder path to let WFDB library read the ECG signals
+    #         file_name = os.path.join(folder_temp, ecg_property.file_name)
+    #         signals, fields = wfdb.rdsamp(file_name, channels=ecg_property.channel)
+    #         # Write new ECG files with only selected channels
+    #         wfdb.wrsamp(record_name=ecg_property.file_name, fs=ecg_property.sample_rate, units=[
+    #                     'mV'], sig_name=list_channel, p_signal=signals, write_dir=download_location)

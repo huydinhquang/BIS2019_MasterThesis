@@ -22,7 +22,14 @@ def write_file(download_location, file_name, output_data):
     output.close()
 
 def get_channel_index(channel, list_channel):
-    return [channel.index(x) for x in list_channel]
+    result = []
+    for x in channel:
+        for index, y in enumerate(list_channel):
+            if x == y:
+                result.append(index)
+                break
+    return result
+    # return [index for index, y in enumerate(list_channel) for x in channel if x==y] # Wrong order
 
 def create_folder(path):
     # Check whether the specified path exists or not
