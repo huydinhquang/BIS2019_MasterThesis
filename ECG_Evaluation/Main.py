@@ -14,6 +14,7 @@ from Controllers.SciPyController import SciPyController
 from Processor import Processor
 from Processors.ManageChannelProcessor import ManageChannelProcessor
 from Processors.RecordSetProcessor import RecordSetProcessor
+from Processors.ImportSourceProcessor import ImportSourceProcessor
 import Controllers.Constants as cons
 
 st.title('ECG System')
@@ -42,8 +43,9 @@ processor = Processor()
 manage_channel_processor = ManageChannelProcessor()
 record_set_processor = RecordSetProcessor()
 export_data_processor = ExportDataProcessor()
+import_source_processor = ImportSourceProcessor()
 
-def read_property(dir_name, file_name, file_list, format_desc):
+def read_property(dir_name, file_list, file_name,format_desc):
     # Read source ecg property    
     if format_desc == 'wfdb':
         processor.add(WFDBController(dir_name, file_name, file_list))
@@ -59,7 +61,7 @@ def read_property(dir_name, file_name, file_list, format_desc):
 #         processor.add(SciPyController(dir_name, file_name, file_list))
 #     return processor.get_source_property_constraint()
 
-def read_final_property(ecg_property):
+def read_final_property(ecg_property, file_list, file_name):
     # Get final ecg property
     final_ecg_property = processor.render_property(ecg_property)
 
@@ -67,19 +69,10 @@ def read_final_property(ecg_property):
         import_source = st.button('Import source')
         if import_source:
             # Open MongoDB connection
-            my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
+            db_result = con.connect_mongodb()
 
             # Save ECG properties
-            ecg_id = scraper.save_ecg_property(my_main_col, final_ecg_property)
-            if ecg_id:
-                list_file_id = []
-                for item in file_list:
-                    # Save ECG file to MongoDB
-                    file_id = scraper.save_ecg_file(my_db, item[1], item[0], ecg_id, final_ecg_property)
-                    if file_id:
-                        list_file_id.append([file_id])
-                if len(list_file_id) == final_ecg_property.ecg:
-                    st.success('Imported successfully!')
+            import_source_processor.save_ecg_property(db_result, file_list, file_name,final_ecg_property)
 
 def read_downloaded_property(ecg_property):
     processor.render_property(ecg_property)
@@ -97,7 +90,7 @@ def read_downloaded_property(ecg_property):
 
 add_selectbox = st.sidebar.selectbox(
     "Task",
-    ("Home page", "Channel Management", "Source Importation", "Record Set", "Exporting Template", "Export Data")
+    ("Home page", "Channel Management", "Import Source", "Record Set", "Exporting Template", "Export Data")
 )
 
 add_selectbox = add_selectbox.lower()
@@ -121,20 +114,20 @@ if add_selectbox == "channel management":
         else:
             st.warning('Please try again!')
 
-elif add_selectbox == "source importation":
+elif add_selectbox == "import source":
     dir_name, format_desc, clicked = db_import.load_form()
     if clicked or st.session_state.get_data:
         st.session_state.get_data = True
 
         # Process to get the list of files when selecting the folder
-        file_list, file_name = processor.process_file(dir_name)
+        file_list, file_name = import_source_processor.process_file(dir_name)
 
         # Read ECG properties when user selects a source
-        ecg_property = read_property(dir_name, file_name, file_list, format_desc.lower())
+        ecg_property = read_property(dir_name, file_list, file_name,format_desc.lower())
 
         # Read Final ECG properties
         if ecg_property:
-            read_final_property(ecg_property)
+            read_final_property(ecg_property, file_list,file_name)
 elif add_selectbox == "record set":
     # list_channel, sample_rate, export_unit, clicked = download_channel.load_form()
     load_source_list_clicked = download_channel.load_form()

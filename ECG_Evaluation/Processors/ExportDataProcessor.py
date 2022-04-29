@@ -1,3 +1,4 @@
+from msilib.schema import File
 from bson.objectid import ObjectId
 from pymongo import helpers
 import streamlit as st
@@ -13,8 +14,11 @@ import Views.DownloadChannel as download_channel
 import Scraper as scraper
 import Scrapers.RecordSetScraper as record_set_scraper
 from Controllers.ECGModel import ECG
+from Controllers.FilesModel import Files
 import Controllers.Helper as helper
 import os
+import Controllers.WFDBHelper as wfdb_helper
+
 
 class ExportDataProcessor:
     def load_channel_list_from_record_set(self, ecg_col, record_set_col, record_set_id):
@@ -164,7 +168,6 @@ class ExportDataProcessor:
 
     def extract_data(self,db_result, ecg_data:list[ECG], folder_download):
         db= db_result[cons.DB_NAME]
-        list_selected_ecg = []
         # Loop record in selected RecordSet
         for x in ecg_data:
             selected_channel = st.session_state[x.id]
@@ -174,16 +177,21 @@ class ExportDataProcessor:
         list_selected_ecg_id = [x.id for x in ecg_data]
 
         # Search by list of ECG Id to retrieve ECG files
-        list_files = scraper.retrieve_ecg_file(db, list_selected_ecg_id)
+        list_files:list[Files] = scraper.retrieve_ecg_file(db, list_selected_ecg_id)
 
         # Download and store the ECG files from MongoDB to local
         # Create a folder for each file name to store all related ECG files (Ex: *.dat, *.hea, *.xyz)
         for x in list_files:
-            file_name = helper.get_file_name(x.file_name)
-            download_location = os.path.join(folder_download, f'{x.ecg_id}{cons.CONS_UNDERSCORE}{file_name}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}')
-            helper.write_file(download_location, x.file_name, x.output_data)
+            # file_name = helper.get_file_name(x.file_name)
+            download_location = os.path.join(folder_download, f'{x.ecg_id}{cons.CONS_UNDERSCORE}{x.file_name}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}')
+            helper.write_file(download_location, x.file_name_ext, x.output_data)
+            x.folder_download = download_location
 
-        
+        for x in ecg_data:
+            download_location = helper.get_folder_download(x, list_files)
+            ecg_property = wfdb_helper.get_source_property_with_condition(download_location, x.file_name, x.channel_index)
+            st.write('test')
+            
     #     for x in ecg_data:
     #         # print(x.file_name)
     #         # print(x.id)

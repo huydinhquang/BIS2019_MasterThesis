@@ -39,6 +39,7 @@ ECG_ID = 'ecg_id'
 
 # Files collection column name
 FILE_ID_SHORT = '_id'
+FILE_ECG_FILE_NAME_EXT = 'file_name_ext'
 
 # ECG Column Header
 HEADER_SOURCE = 'Source'
@@ -66,12 +67,13 @@ CONS_COMMA = ','
 CONS_SEMICOLON = ';'
 
 # Global
-
 CONS_CHANNEL = 'channel'
 CONS_CREATED_DATE = 'created_date'
 CONS_MODIFIED_DATE = 'modified_date'
 CONS_ID_SHORT = '_id'
 CONS_BUTTON_CREATE = 'create_clicked'
+CONS_FILE_LIST = 'file_list'
+CONS_DIR_LIST = 'dir_list'
 
 # Record Set
 CONS_RECORD_SET_NAME = 'record_set_name'

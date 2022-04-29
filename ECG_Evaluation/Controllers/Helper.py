@@ -38,3 +38,7 @@ def create_folder(path):
         # Create a new directory because it does not exist 
         os.makedirs(path)
         print(f'The new directory {path} is created!')
+
+def get_folder_download(ecg: ECG, list_files:list[Files]):
+    # Get the first element if it matches the provided ECG Id
+    return next(x.folder_download for x in list_files if x.ecg_id == ecg.id)
