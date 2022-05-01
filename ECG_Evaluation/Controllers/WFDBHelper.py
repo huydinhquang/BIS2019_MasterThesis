@@ -54,19 +54,46 @@ def write_channel(final_ecg_property : ECG, file_name, dir_name):
 #         plt.ylabel("ECG in mV")
 #         st.pyplot(plt)
 
-def visualize_chart(signals, fs_target, fs):
+def resampling_data(signals, fs_target, fs):
+    signals_flatten = signals.flatten()
+    ratio = fs_target/fs
+    # Calculate new length of sample
+    new_sample_length = int(signals_flatten.shape[0]*ratio)
+    new_samples_singal=np.linspace(signals_flatten[0], signals_flatten[-1], new_sample_length, endpoint=True)
+    current_signal_position = np.linspace(signals_flatten[0], signals_flatten[-1], len(signals_flatten), endpoint=True)
+    resampled_signal = np.interp(new_samples_singal, current_signal_position, signals_flatten)
+    return resampled_signal
+
+def visualize_chart(signals, resampled_signal, fs_target):
         # for channel in range(channels):        
         #     wfdb.plot_items(signal=signals, fs=fields['fs'], title='Huy Test')
         #     st.pyplot(signals)
-        signals = signals.flatten()
-        ratio = fs_target/fs
-        # calculate new length of sample
-        new_sample_length = int(signals.shape[0]*ratio)
-        new_samples_singal=np.linspace(signals[0], signals[-1], new_sample_length, endpoint=False)
-        current_signal_position = np.linspace(signals[0], signals[-1], len(signals), endpoint=False)
-        resampled_signal = np.interp(new_samples_singal, current_signal_position, signals)
-        time = np.arange(resampled_signal.size) / fs_target
-        plt.plot(time, resampled_signal,marker='o')
-        plt.xlabel("time in s")
-        plt.ylabel("ECG in mV")
-        st.pyplot(plt)
+        
+
+        time = np.arange(signals.size) / fs_target
+
+        # plot1 = plt.figure(1)
+        plt.plot(time, signals, color='blue', marker='o')
+
+        # plot2 = plt.figure(2)
+        plt.plot(time, resampled_signal, color='green', marker='o')
+
+        # fig1 = plt.figure()
+        # fig2 = plt.figure()
+
+        # ax1 = fig1.add_subplot(111)
+        # ax2 = fig2.add_subplot(111)
+
+        # ax1.plot(time, signals, color='blue', marker='o')
+        # ax2.plot(time, resampled_signal, color='blue', marker='o')
+
+        # ax1.plot(time, signals, color='blue', marker='o')
+        # ax1.set(xlabel='time in s', ylabel='ECG in mV')
+        # ax2.plot(time, resampled_signal, color='blue', marker='o')
+        # ax2.set(xlabel='time in s', ylabel='ECG in mV')
+
+        # plt.plot(time, signals,marker='o')
+        # plt.xlabel("time in s")
+        # plt.ylabel("ECG in mV")
+        plt.show()
+        # st.pyplot(plt)

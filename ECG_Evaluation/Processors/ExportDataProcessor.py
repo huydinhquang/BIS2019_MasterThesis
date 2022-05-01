@@ -223,8 +223,15 @@ class ExportDataProcessor:
                 result_list[-1] = np.pad(result_list[-1], (0, missing_len_last_slice), 'constant')
 
             for y in result_list:
-                st.write(str(len(y)))
-                wfdb_helper.visualize_chart(y, target_sample_rate, ecg_property.sample_rate)
+                # Get total number of channels in an ECG record
+                number_channel = y.shape[1]
+                # arr = np.array(y)
+                newarr = np.array_split(y, number_channel, axis=1)
+                for signal in newarr:
+                    resampled_signal = wfdb_helper.resampling_data(signal, target_sample_rate, ecg_property.sample_rate)
+                    wfdb_helper.visualize_chart(signal, resampled_signal, target_sample_rate)
+                    # wfdb_helper.visualize_chart(signal, resampled_signal, target_sample_rate)
+                    break
             
             # st.write(result_list[-1])
 
