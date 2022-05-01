@@ -18,7 +18,7 @@ from Controllers.FilesModel import Files
 import Controllers.Helper as helper
 import os
 import Controllers.WFDBHelper as wfdb_helper
-
+import numpy as np
 
 class ExportDataProcessor:
     def load_channel_list_from_record_set(self, ecg_col, record_set_col, record_set_id):
@@ -164,9 +164,9 @@ class ExportDataProcessor:
                 # Every form must have a submit button.
                 extract_clicked = st.form_submit_button("Extract data")
                 if extract_clicked:
-                    self.extract_data(db_result,ecg_data, folder_download)
+                    self.extract_data(db_result,ecg_data, folder_download,exp_tem_selected_rows)
 
-    def extract_data(self,db_result, ecg_data:list[ECG], folder_download):
+    def extract_data(self,db_result, ecg_data:list[ECG], folder_download,exp_tem_selected_rows):
         db= db_result[cons.DB_NAME]
         # Loop record in selected RecordSet
         for x in ecg_data:
@@ -187,10 +187,60 @@ class ExportDataProcessor:
             helper.write_file(download_location, x.file_name_ext, x.output_data)
             x.folder_download = download_location
 
+        # Retrieve Target sample rate and Duration from Exporting Template
+        target_sample_rate = int(exp_tem_selected_rows[cons.HEADER_TARGET_SAMPLE_RATE])
+        duration = int(exp_tem_selected_rows[cons.HEADER_DURATION])
+        
         for x in ecg_data:
+            # Get downloaded location of the ECG record
             download_location = helper.get_folder_download(x, list_files)
-            ecg_property = wfdb_helper.get_source_property_with_condition(download_location, x.file_name, x.channel_index)
-            st.write('test')
+
+            # Read the ECG record by the limited channels, which are filtered by the exporting template
+            # The channels are accessed by WFDB helper with channel index
+            ecg_property:ECG = wfdb_helper.get_source_property_with_condition(download_location, x.file_name, x.channel_index)
+
+            # Calculate total length of the samples
+            len_total_samples = len(ecg_property.sample)
+
+            # Calculate the new length of the samples with the duration in the exporting template
+            step = ecg_property.sample_rate * duration
+
+            # Calculate number of slices (the total number samples divided by the step)
+            number_slice = len_total_samples / step
+            
+            # Calculate to get the list of array containing ECG signal data by with slice of the step
+            # Ex: [[0, 1, 2, ..., 9], [10, 11, 12, ..., 19], ..., [50, 51, 52, ..., 59]] - 5 slices with step: 10
+            result_list = [ ecg_property.sample[int(y):int(y)+step] for y in np.arange(number_slice)*step ]
+            
+            # Check the length of the last slice
+            # Round up 'number_slice' to the next integer
+            number_slice_round_up = np.ceil(number_slice)
+
+            # If the last slice does not have enough samples (Ex: 5200 samples instead of 10.000 samples)
+            # Add '0' to ensure the last slice will have the same length of samples with the others of the other arrays
+            if number_slice_round_up - number_slice > 0:
+                missing_len_last_slice = step - len(result_list[-1])
+                result_list[-1] = np.pad(result_list[-1], (0, missing_len_last_slice), 'constant')
+
+            for y in result_list:
+                st.write(str(len(y)))
+                wfdb_helper.visualize_chart(y, target_sample_rate, ecg_property.sample_rate)
+            
+            # st.write(result_list[-1])
+
+            # index_by_time = [int(y)*number_samples_by_duration_exp_temp for y in np.arange(1, times, 1)]
+            # list = []
+            # temp = 0
+            # for z in index_by_time:
+            #     arr_samples_by_duration = ecg_property.sample[temp:z]
+            #     list.append(arr_samples_by_duration)
+            #     temp = z
+
+            # for y in result_list:
+            #     list.append()
+            #     wfdb_helper.visualize_chart(y, target_sample_rate, ecg_property.sample_rate)
+
+
             
     #     for x in ecg_data:
     #         # print(x.file_name)

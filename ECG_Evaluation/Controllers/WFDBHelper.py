@@ -28,7 +28,7 @@ def get_source_property_with_condition(dir_name, file_name, channel_target):
         sample_rate=fs
     )
 
-def write_channel(self, final_ecg_property : ECG, file_name, dir_name):
+def write_channel(final_ecg_property : ECG, file_name, dir_name):
     list_sub_channel_folder = []
     for idx, channel in enumerate(final_ecg_property.channel):
         # Create folder for each channel
@@ -43,13 +43,30 @@ def write_channel(self, final_ecg_property : ECG, file_name, dir_name):
         wfdb.wrsamp(record_name=channel, fs = final_ecg_property.sample_rate, units=['mV'], sig_name=[channel], p_signal=signals, write_dir=path)
     return list_sub_channel_folder
 
-def visualize_chart(self, signals, fs, channels):
-    for channel in range(channels):        
+# def visualize_chart(self, signals, fs, channels):
+#     for channel in range(channels):        
+#         #     wfdb.plot_items(signal=signals, fs=fields['fs'], title='Huy Test')
+#         #     st.pyplot(signals)
+#         signals, fields = wfdb.rdsamp(self.dirname + '/' + self.fileName, channels=[channel])
+#         timeArray = np.arange(signals.size) / fs
+#         plt.plot(timeArray, signals)
+#         plt.xlabel("time in s")
+#         plt.ylabel("ECG in mV")
+#         st.pyplot(plt)
+
+def visualize_chart(signals, fs_target, fs):
+        # for channel in range(channels):        
         #     wfdb.plot_items(signal=signals, fs=fields['fs'], title='Huy Test')
         #     st.pyplot(signals)
-        signals, fields = wfdb.rdsamp(self.dirname + '/' + self.fileName, channels=[channel])
-        timeArray = np.arange(signals.size) / fs
-        plt.plot(timeArray, signals)
+        signals = signals.flatten()
+        ratio = fs_target/fs
+        # calculate new length of sample
+        new_sample_length = int(signals.shape[0]*ratio)
+        new_samples_singal=np.linspace(signals[0], signals[-1], new_sample_length, endpoint=False)
+        current_signal_position = np.linspace(signals[0], signals[-1], len(signals), endpoint=False)
+        resampled_signal = np.interp(new_samples_singal, current_signal_position, signals)
+        time = np.arange(resampled_signal.size) / fs_target
+        plt.plot(time, resampled_signal,marker='o')
         plt.xlabel("time in s")
         plt.ylabel("ECG in mV")
         st.pyplot(plt)
