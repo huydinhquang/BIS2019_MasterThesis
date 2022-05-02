@@ -145,7 +145,8 @@ class ExportDataProcessor:
             ecg_data = [
                 ECG(id=y[cons.ECG_ID_SHORT],
                     file_name=y[cons.ECG_FILE_NAME],
-                    channel=y[cons.ECG_CHANNEL])
+                    channel=y[cons.ECG_CHANNEL],
+                    sample_rate=y[cons.ECG_SAMPLE_RATE])
                 for x in result for y in x[ecg_col.name]
             ]
 
@@ -229,9 +230,9 @@ class ExportDataProcessor:
                 newarr = np.array_split(y, number_channel, axis=1)
                 for signal in newarr:
                     resampled_signal = wfdb_helper.resampling_data(signal, target_sample_rate, ecg_property.sample_rate)
-                    wfdb_helper.visualize_chart(signal, resampled_signal, target_sample_rate)
-                    # wfdb_helper.visualize_chart(signal, resampled_signal, target_sample_rate)
-                    break
+                    wfdb_helper.visualize_chart(signal, ecg_property.sample_rate, resampled_signal, target_sample_rate)
+                    # wfdb_helper.visualize_chart(resampled_signal, target_sample_rate)
+                    return
             
             # st.write(result_list[-1])
 

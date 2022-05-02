@@ -1,3 +1,4 @@
+from cProfile import label
 from ECGController import ECGController
 import streamlit as st
 from Controllers.ECGModel import ECG
@@ -64,36 +65,47 @@ def resampling_data(signals, fs_target, fs):
     resampled_signal = np.interp(new_samples_singal, current_signal_position, signals_flatten)
     return resampled_signal
 
-def visualize_chart(signals, resampled_signal, fs_target):
-        # for channel in range(channels):        
-        #     wfdb.plot_items(signal=signals, fs=fields['fs'], title='Huy Test')
-        #     st.pyplot(signals)
+def visualize_chart(signal, fs, resampled_signal, fs_target):
+    time_signal = np.arange(signal.size) / fs
+    time_resampled_signal = np.arange(resampled_signal.size) / fs_target
+
+    fig, axs = plt.subplots(2)
+    fig.suptitle('Vertically stacked subplots')
+    axs[0].plot(time_signal, signal, color='blue', marker='o')#, label='Sample rate: ' + str(fs) + ' - Number of samples: ' + str(len(signal)))
+    axs[0].set_title('Feq: ' + str(fs) + ' - Samples: ' + str(len(signal)))
+    axs[1].plot(time_resampled_signal, resampled_signal, color='orange', marker='o')#,label='Sample rate: ' + str(fs_target) + ' - Number of samples: ' + str(len(resampled_signal)))
+    axs[1].set_title('Feq: ' + str(fs_target) + ' - Samples: ' + str(len(resampled_signal)))
+
+    for ax in axs.flat:
+        ax.set(xlabel='time (s)', ylabel='mV')
+
+    # # Legend
+    # handels = []
+    # labels = []
+    
+    # for ax in fig.axes:
+    #     Handel, Label = ax.get_legend_handles_labels()
+    #     handels.extend(Handel)
+    #     labels.extend(Label)
         
+    # # Hide x labels and tick labels for top plots and y ticks for right plots.
+    # for ax in axs.flat:
+    #     ax.label_outer()
 
-        time = np.arange(signals.size) / fs_target
+    # fig.legend(handels, labels, loc = 'upper right')
 
-        # plot1 = plt.figure(1)
-        plt.plot(time, signals, color='blue', marker='o')
+    # Tight layout
+    fig.tight_layout()
+    
+    st.pyplot(plt)
 
-        # plot2 = plt.figure(2)
-        plt.plot(time, resampled_signal, color='green', marker='o')
+# def visualize_chart(signals, fs):
+    # # for channel in range(channels):        
+    # #     wfdb.plot_items(signal=signals, fs=fields['fs'], title='Huy Test')
+    # #     st.pyplot(signals)
 
-        # fig1 = plt.figure()
-        # fig2 = plt.figure()
-
-        # ax1 = fig1.add_subplot(111)
-        # ax2 = fig2.add_subplot(111)
-
-        # ax1.plot(time, signals, color='blue', marker='o')
-        # ax2.plot(time, resampled_signal, color='blue', marker='o')
-
-        # ax1.plot(time, signals, color='blue', marker='o')
-        # ax1.set(xlabel='time in s', ylabel='ECG in mV')
-        # ax2.plot(time, resampled_signal, color='blue', marker='o')
-        # ax2.set(xlabel='time in s', ylabel='ECG in mV')
-
-        # plt.plot(time, signals,marker='o')
-        # plt.xlabel("time in s")
-        # plt.ylabel("ECG in mV")
-        plt.show()
-        # st.pyplot(plt)
+    # time = np.arange(signals.size) / fs
+    # plt.plot(time, signals,marker='o')
+    # plt.xlabel("time in s")
+    # plt.ylabel("ECG in mV")
+    # st.pyplot(plt)
