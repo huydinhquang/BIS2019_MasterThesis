@@ -44,17 +44,6 @@ def write_channel(final_ecg_property : ECG, file_name, dir_name):
         wfdb.wrsamp(record_name=channel, fs = final_ecg_property.sample_rate, units=['mV'], sig_name=[channel], p_signal=signals, write_dir=path)
     return list_sub_channel_folder
 
-# def visualize_chart(self, signals, fs, channels):
-#     for channel in range(channels):        
-#         #     wfdb.plot_items(signal=signals, fs=fields['fs'], title='Huy Test')
-#         #     st.pyplot(signals)
-#         signals, fields = wfdb.rdsamp(self.dirname + '/' + self.fileName, channels=[channel])
-#         timeArray = np.arange(signals.size) / fs
-#         plt.plot(timeArray, signals)
-#         plt.xlabel("time in s")
-#         plt.ylabel("ECG in mV")
-#         st.pyplot(plt)
-
 def resampling_data(signals, fs_target, fs):
     signals_flatten = signals.flatten()
     ratio = fs_target/fs
@@ -98,14 +87,3 @@ def visualize_chart(signal, fs, resampled_signal, fs_target):
     fig.tight_layout()
     
     st.pyplot(plt)
-
-# def visualize_chart(signals, fs):
-    # # for channel in range(channels):        
-    # #     wfdb.plot_items(signal=signals, fs=fields['fs'], title='Huy Test')
-    # #     st.pyplot(signals)
-
-    # time = np.arange(signals.size) / fs
-    # plt.plot(time, signals,marker='o')
-    # plt.xlabel("time in s")
-    # plt.ylabel("ECG in mV")
-    # st.pyplot(plt)
