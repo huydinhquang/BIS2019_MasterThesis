@@ -111,7 +111,7 @@ class ExportDataProcessor:
         # Load full dataset of RecordSet
         df_record_set, count_record_set = self.load_record_set_data(record_set_col)
         st.write('### Full RecordSet', df_record_set)
-        st.info('Total items: ' + str(count_record_set))
+        st.info('Total items: {}'.format(str(count_record_set)))
 
         record_set_selected_indices = st.selectbox('Select rows:', df_record_set.index)
         record_set_selected_rows = df_record_set.loc[record_set_selected_indices]
@@ -120,7 +120,7 @@ class ExportDataProcessor:
         # Load full dataset of Exporting Template
         df_exp_tem, count_exp_tem = self.load_exp_tem_data(exp_tem_col)
         st.write('### Full Exporting Template', df_exp_tem)
-        st.info('Total items: ' + str(count_exp_tem))
+        st.info('Total items: {}'.format(str(count_exp_tem)))
         
         exp_tem_selected_indices = st.selectbox('Select rows:', df_exp_tem.index)
         exp_tem_selected_rows = df_exp_tem.loc[exp_tem_selected_indices]
@@ -151,14 +151,14 @@ class ExportDataProcessor:
             ]
 
             # Get text of channels based on selected exporting template
-            list_channels_str = 'Channel ' + exp_tem_selected_rows[cons.HEADER_CHANNEL]
+            list_channels_str = 'Channel {}'.format(exp_tem_selected_rows[cons.HEADER_CHANNEL])
             
             with st.form("extract_data_form"):
                 # Widgets will be genrated by the number of ECG records
                 # This is used for mapping channel between ECG record and Exporting template
                 for x in ecg_data:
-                    st.write(list_channels_str + ' from selected exporting template')
-                    st.multiselect('Record: ' + x.file_name, x.channel, key=str(x.id))
+                    st.write('{} from selected exporting template'.format(list_channels_str))
+                    st.multiselect('Record: {}'.format(x.file_name), x.channel, key=str(x.id))
 
                 folder_download = st.text_input(label='Downloadable folder:', value="C:/Users/HuyDQ/OneDrive/HuyDQ/OneDrive/MasterThesis/Thesis/DB/Download")
 
@@ -188,10 +188,11 @@ class ExportDataProcessor:
             helper.write_file(download_location, x.file_name_ext, x.output_data)
             x.folder_download = download_location
 
-        # Retrieve Target sample rate and Duration from Exporting Template
+        # Retrieve Target sample rate, Duration, list of channels from Exporting Template
         target_sample_rate = int(exp_tem_selected_rows[cons.HEADER_TARGET_SAMPLE_RATE])
         duration = int(exp_tem_selected_rows[cons.HEADER_DURATION])
-        
+        list_channels = common.convert_string_to_list(exp_tem_selected_rows[cons.HEADER_CHANNEL], cons.CONS_COMMA, True)
+
         for x in ecg_data:
             # Get downloaded location of the ECG record
             download_location = helper.get_folder_download(x, list_files)
@@ -221,18 +222,24 @@ class ExportDataProcessor:
             # Add '0' to ensure the last slice will have the same length of samples with the others of the other arrays
             if number_slice_round_up - number_slice > 0:
                 missing_len_last_slice = step - len(result_list[-1])
-                result_list[-1] = np.pad(result_list[-1], (0, missing_len_last_slice), 'constant')
+                list = []
+                list_append_zero = np.pad(list, (0, len(list_channels)), 'constant')
+                for y in range(missing_len_last_slice):
+                    list.append(list_append_zero)
+                merge_list_result = np.vstack((result_list[-1], list))
+                result_list[-1] = merge_list_result
 
             for y in result_list:
                 # Get total number of channels in an ECG record
                 number_channel = y.shape[1]
-                # arr = np.array(y)
-                newarr = np.array_split(y, number_channel, axis=1)
-                for signal in newarr:
+                # Create a new list for each channel array (signal data)
+                list_signal = np.array_split(y, number_channel, axis=1)
+                for idx, signal in enumerate(list_signal):
+                    # Find the channel name from exporting template channels according to the index of list of channels signal
+                    current_channel_name = list_channels[idx]
                     resampled_signal = wfdb_helper.resampling_data(signal, target_sample_rate, ecg_property.sample_rate)
-                    wfdb_helper.visualize_chart(signal, ecg_property.sample_rate, resampled_signal, target_sample_rate)
-                    # wfdb_helper.visualize_chart(resampled_signal, target_sample_rate)
-                    return
+                    wfdb_helper.visualize_chart(x.file_name, current_channel_name, signal, ecg_property.sample_rate, resampled_signal, target_sample_rate)
+                    # return
             
             # st.write(result_list[-1])
 

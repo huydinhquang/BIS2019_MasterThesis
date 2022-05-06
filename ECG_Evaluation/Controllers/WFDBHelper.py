@@ -45,25 +45,42 @@ def write_channel(final_ecg_property : ECG, file_name, dir_name):
     return list_sub_channel_folder
 
 def resampling_data(signals, fs_target, fs):
+    # Flatten the array for further processing (Ex: array([[0.2735], [0.287], [0.2925], [0.312]]) --> [0.2735, 0.287,  0.2925, 0.312])
     signals_flatten = signals.flatten()
+    # Calculate the ratio between the current and target sample rate
     ratio = fs_target/fs
-    # Calculate new length of sample
+    # Calculate new length of samples
     new_sample_length = int(signals_flatten.shape[0]*ratio)
-    new_samples_singal=np.linspace(signals_flatten[0], signals_flatten[-1], new_sample_length, endpoint=True)
-    current_signal_position = np.linspace(signals_flatten[0], signals_flatten[-1], len(signals_flatten), endpoint=True)
-    resampled_signal = np.interp(new_samples_singal, current_signal_position, signals_flatten)
+    # Calculate time signal (origin x-coordinates)
+    time_signal = np.arange(signals_flatten.size) / fs
+    # Calculate time signal based on the new length of samples (new x-coordinates)
+    time_signal_new =np.linspace(time_signal[0], time_signal[-1], new_sample_length, endpoint=True)
+    # Calculate the new signal data by using interpolate method
+    ########################
+    # Syntax : numpy.interp(x, xp, fp, left = None, right = None, period = None)
+    # Parameters :
+    # x : [array_like] The x-coordinates at which to evaluate the interpolated values.
+    # xp: [1-D sequence of floats] The x-coordinates of the data points, must be increasing if the argument period is not specified.
+    #       Otherwise, xp is internally sorted after normalizing the periodic boundaries with xp = xp % period.
+    # fp : [1-D sequence of float or complex] The y-coordinates of the data points, same length as xp.
+    ########################
+    # x = time_signal_new --> new array of calculating the duration based on the length of the samples
+    # xp = time_signal --> origin array of duration
+    # fp = signals_flatten --> origin array of signal data, which is fattened
+    ########################
+    resampled_signal = np.interp(time_signal_new, time_signal, signals_flatten)
     return resampled_signal
 
-def visualize_chart(signal, fs, resampled_signal, fs_target):
+def visualize_chart(file_name, channel_name, signal, fs, resampled_signal, fs_target):
     time_signal = np.arange(signal.size) / fs
     time_resampled_signal = np.arange(resampled_signal.size) / fs_target
 
     fig, axs = plt.subplots(2)
-    fig.suptitle('Vertically stacked subplots')
+    fig.suptitle('File name: {}, ExpTemp channel: {}'.format(file_name, channel_name))
     axs[0].plot(time_signal, signal, color='blue', marker='o')#, label='Sample rate: ' + str(fs) + ' - Number of samples: ' + str(len(signal)))
-    axs[0].set_title('Feq: ' + str(fs) + ' - Samples: ' + str(len(signal)))
+    axs[0].set_title('Feq: {} - Samples: {}'.format(str(fs),str(len(signal))))
     axs[1].plot(time_resampled_signal, resampled_signal, color='orange', marker='o')#,label='Sample rate: ' + str(fs_target) + ' - Number of samples: ' + str(len(resampled_signal)))
-    axs[1].set_title('Feq: ' + str(fs_target) + ' - Samples: ' + str(len(resampled_signal)))
+    axs[1].set_title('Feq: {} - Samples: {}'.format(str(fs_target), str(len(resampled_signal))))
 
     for ax in axs.flat:
         ax.set(xlabel='time (s)', ylabel='mV')

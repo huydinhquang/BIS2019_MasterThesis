@@ -29,7 +29,7 @@ def get_channel_index(channel, list_channel):
                 result.append(index)
                 break
     return result
-    # return [index for index, y in enumerate(list_channel) for x in channel if x==y] # Wrong order
+    # return [index for index, y in enumerate(list_channel) for x in channel if x==y] # Wrong output order if we use this formula
 
 def create_folder(path):
     # Check whether the specified path exists or not
