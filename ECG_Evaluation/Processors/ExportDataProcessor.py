@@ -221,13 +221,21 @@ class ExportDataProcessor:
             # If the last slice does not have enough samples (Ex: 5200 samples instead of 10.000 samples)
             # Add '0' to ensure the last slice will have the same length of samples with the others of the other arrays
             if number_slice_round_up - number_slice > 0:
+                # Count the missing number of samples to fill up the length
                 missing_len_last_slice = step - len(result_list[-1])
-                list = []
-                list_append_zero = np.pad(list, (0, len(list_channels)), 'constant')
-                for y in range(missing_len_last_slice):
-                    list.append(list_append_zero)
-                merge_list_result = np.vstack((result_list[-1], list))
-                result_list[-1] = merge_list_result
+                # Create an empty list for later use
+                empty_list = []
+                # Add a list of zero to the created list based on the number of selected channels in the Exporting Template
+                # Result: [0. 0.] if there are 2 channels. The channels are dynamic, so the result can be different.
+                list_append_zero = np.pad(empty_list, (0, len(list_channels)), 'constant')
+                # Extend more the missing number of samples to the last slice.
+                ########################
+                # 0: No item is added to the beginning of the result_list
+                # missing_len_last_slice: Number of items is added to the end of the result_list
+                # 0: No item is added to the left of the dimension (array)
+                # 0: No item is added to the right of the dimension (array)
+                ########################
+                result_list[-1] = np.pad(result_list[-1], ((0, missing_len_last_slice), (0, 0)), constant_values=list_append_zero)
 
             for y in result_list:
                 # Get total number of channels in an ECG record
