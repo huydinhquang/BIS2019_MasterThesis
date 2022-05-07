@@ -61,14 +61,6 @@ class ExportDataProcessor:
 
         return df, count
 
-        #     record_set_name, region_start, region_end, create_clicked = download_channel.record_set()
-        #     if create_clicked:
-        #         list_selected_ecg = []
-        #         for index, row in selected_rows.iterrows():
-        #             list_selected_ecg.append(ObjectId(row[cons.HEADER_ID]))
-        #         if len(list_selected_ecg) > 0:
-        #             record_set_id = record_set_scraper.add_record_set(record_set_col, record_set_name, list_selected_ecg)
-        #             return record_set_id
 
     def load_exp_tem_data(self, exp_tem_col):
         # st.session_state.select_row = True
@@ -193,6 +185,8 @@ class ExportDataProcessor:
         duration = int(exp_tem_selected_rows[cons.HEADER_DURATION])
         list_channels = common.convert_string_to_list(exp_tem_selected_rows[cons.HEADER_CHANNEL], cons.CONS_COMMA, True)
 
+        # Create a new matrix to store resampled signal by record
+        dataset_record = []
         for x in ecg_data:
             # Get downloaded location of the ECG record
             download_location = helper.get_folder_download(x, list_files)
@@ -237,49 +231,24 @@ class ExportDataProcessor:
                 ########################
                 result_list[-1] = np.pad(result_list[-1], ((0, missing_len_last_slice), (0, 0)), constant_values=list_append_zero)
 
-            for y in result_list:
+            # Loop the slice of each record, which is divided by the duration
+            for slice in result_list:
                 # Get total number of channels in an ECG record
-                number_channel = y.shape[1]
+                number_channel = slice.shape[1]
                 # Create a new list for each channel array (signal data)
-                list_signal = np.array_split(y, number_channel, axis=1)
-                for idx, signal in enumerate(list_signal):
+                list_channels_signal = np.array_split(slice, number_channel, axis=1)
+                # Create a new matrix to store resampled signal by channel
+                dataset_channel = []
+                for idx, signal in enumerate(list_channels_signal):
                     # Find the channel name from exporting template channels according to the index of list of channels signal
                     current_channel_name = list_channels[idx]
+                    # Calculate the new data point as the resampling process
                     resampled_signal = wfdb_helper.resampling_data(signal, target_sample_rate, ecg_property.sample_rate)
+                    # Append the matrix based on the sequence 
+                    dataset_channel.append(resampled_signal)
                     wfdb_helper.visualize_chart(x.file_name, current_channel_name, signal, ecg_property.sample_rate, resampled_signal, target_sample_rate)
-                    # return
-            
-            # st.write(result_list[-1])
+                dataset_record.append(dataset_channel)
+                    
+        helper.create_hdf5('C:/Users/HuyDQ/OneDrive/HuyDQ/OneDrive/MasterThesis/Thesis/DB/Download', 'file.h5', 'dataset_signal', dataset_record)
 
-            # index_by_time = [int(y)*number_samples_by_duration_exp_temp for y in np.arange(1, times, 1)]
-            # list = []
-            # temp = 0
-            # for z in index_by_time:
-            #     arr_samples_by_duration = ecg_property.sample[temp:z]
-            #     list.append(arr_samples_by_duration)
-            #     temp = z
-
-            # for y in result_list:
-            #     list.append()
-            #     wfdb_helper.visualize_chart(y, target_sample_rate, ecg_property.sample_rate)
-
-
-            
-    #     for x in ecg_data:
-    #         # print(x.file_name)
-    #         # print(x.id)
-    #         download_location = os.path.join(folder_download, f'{x.id}{cons.CONS_UNDERSCORE}{x.file_name}')
-    #         helper.create_folder(download_location)
-    #         self.write_channel(download_location, x.channel_index, x)
-    #     st.success('Download completed!')
-
-    # def write_channel(self, download_location, list_channel, ecg_property : ECG):
-    #         # Extract only selected channels to the folder
-    #         # Retrieve the folder temp, which has all original ECG files
-    #         folder_temp = f'{download_location}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}'
-    #         # Build the file name with folder path to let WFDB library read the ECG signals
-    #         file_name = os.path.join(folder_temp, ecg_property.file_name)
-    #         signals, fields = wfdb.rdsamp(file_name, channels=ecg_property.channel)
-    #         # Write new ECG files with only selected channels
-    #         wfdb.wrsamp(record_name=ecg_property.file_name, fs=ecg_property.sample_rate, units=[
-    #                     'mV'], sig_name=list_channel, p_signal=signals, write_dir=download_location)
+        st.success('Extract completed!')

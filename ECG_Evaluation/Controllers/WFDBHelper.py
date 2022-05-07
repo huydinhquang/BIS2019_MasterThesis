@@ -44,6 +44,17 @@ def write_channel(final_ecg_property : ECG, file_name, dir_name):
         wfdb.wrsamp(record_name=channel, fs = final_ecg_property.sample_rate, units=['mV'], sig_name=[channel], p_signal=signals, write_dir=path)
     return list_sub_channel_folder
 
+# def write_channel(self, download_location, list_channel, ecg_property : ECG):
+#         # Extract only selected channels to the folder
+#         # Retrieve the folder temp, which has all original ECG files
+#         folder_temp = f'{download_location}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}'
+#         # Build the file name with folder path to let WFDB library read the ECG signals
+#         file_name = os.path.join(folder_temp, ecg_property.file_name)
+#         signals, fields = wfdb.rdsamp(file_name, channels=ecg_property.channel)
+#         # Write new ECG files with only selected channels
+#         wfdb.wrsamp(record_name=ecg_property.file_name, fs=ecg_property.sample_rate, units=[
+#                     'mV'], sig_name=list_channel, p_signal=signals, write_dir=download_location)
+
 def resampling_data(signals, fs_target, fs):
     # Flatten the array for further processing (Ex: array([[0.2735], [0.287], [0.2925], [0.312]]) --> [0.2735, 0.287,  0.2925, 0.312])
     signals_flatten = signals.flatten()
