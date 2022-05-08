@@ -23,9 +23,12 @@ ECG_ECG = 'ecg'
 ECG_FILE_NAME = 'file_name'
 ECG_TOTAL_CHANNELS = 'total_channels'
 ECG_CHANNEL_TEXT = 'is_channel_from_source'
+ECG_UNIT = 'unit'
+ECG_COMMENTS = 'comments'
 
 SINGAL_NAME = 'sig_name'
 SAMPLING_FREQUENCY = 'fs'
+AMPLITUDE_UNIT = 'units'
 CONS_OUTPUT_DATA = 'output_data'
 CONS_TEMP_STR = 'temp'
 
@@ -52,6 +55,9 @@ HEADER_SAMPLE_RATE = 'Sample rate'
 HEADER_TIME = 'Time'
 HEADER_SAMPLES = 'Samples'
 HEADER_ECG = 'ECG files'
+HEADER_UNIT = 'Unit'
+HEADER_CHANNEL_INDEX = 'Channel Index'
+HEADER_COMMENTS = 'Comments'
 
 # RecordSet Column Header
 HEADER_RECORD_SET = 'RecordSet name'
@@ -67,6 +73,7 @@ CONS_COMMA = ','
 CONS_SEMICOLON = ';'
 
 # Global
+CONS_UNDEFINED = 'undefined'
 CONS_FILE_NAME = 'file_name'
 CONS_CHANNEL = 'channel'
 CONS_CREATED_DATE = 'created_date'

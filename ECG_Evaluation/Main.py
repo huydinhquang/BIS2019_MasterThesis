@@ -2,9 +2,9 @@ import streamlit as st
 from Processors.ExportDataProcessor import ExportDataProcessor
 import Views.ManageChannelView as manage_channel_view
 import Views.TemplateExportationView as template_export_view
-import Views.DBImport as db_import
-import Views.DownloadChannel as download_channel
-import Views.ExportDataView as export_data
+import Views.ImportSourceView as import_source_view
+import Views.RecordSetView as record_set_view
+import Views.ExportDataView as export_data_view
 import Controllers.MongoDBConnection as con
 import Scraper as scraper
 import Scrapers.ManageChannelScraper as manage_channel_scraper
@@ -33,12 +33,6 @@ if 'load_channel_list' not in st.session_state:
 if 'generate_channel' not in st.session_state:
 	st.session_state.generate_channel = False
 
-# def connect_db():
-#     if not st.session_state.connect_dba:
-#         st.session_state.connect_dba = True
-#         # Open MongoDB connection
-#         return con.connect_mongodb(), con.connect_mongo_collectiondb()
-
 processor = Processor()
 manage_channel_processor = ManageChannelProcessor()
 record_set_processor = RecordSetProcessor()
@@ -53,17 +47,9 @@ def read_property(dir_name, file_list, file_name,format_desc):
         processor.add(SciPyController(dir_name, file_name, file_list))
     return processor.get_source_property()
 
-# def read_property_constraint(dir_name, file_name, file_list, format_desc, signal_start, signal_end, channel_target):
-#     # Read source ecg property    
-#     if format_desc == 'wfdb':
-#         processor.add(WFDBController(dir_name, file_name, signal_start, signal_end, channel_target))
-#     else:
-#         processor.add(SciPyController(dir_name, file_name, file_list))
-#     return processor.get_source_property_constraint()
-
 def read_final_property(ecg_property, file_list, file_name):
     # Get final ecg property
-    final_ecg_property = processor.render_property(ecg_property)
+    final_ecg_property = import_source_processor.render_property(ecg_property)
 
     if final_ecg_property:
         import_source = st.button('Import source')
@@ -115,7 +101,7 @@ if add_selectbox == "channel management":
             st.warning('Please try again!')
 
 elif add_selectbox == "import source":
-    dir_name, format_desc, clicked = db_import.load_form()
+    dir_name, format_desc, clicked = import_source_view.load_form()
     if clicked or st.session_state.get_data:
         st.session_state.get_data = True
 
@@ -128,9 +114,9 @@ elif add_selectbox == "import source":
         # Read Final ECG properties
         if ecg_property:
             read_final_property(ecg_property, file_list,file_name)
+
 elif add_selectbox == "record set":
-    # list_channel, sample_rate, export_unit, clicked = download_channel.load_form()
-    load_source_list_clicked = download_channel.load_form()
+    load_source_list_clicked = record_set_view.load_form()
     if load_source_list_clicked or st.session_state.load_source_list:
         st.session_state.load_source_list = True
 
@@ -138,20 +124,13 @@ elif add_selectbox == "record set":
         db_result = con.connect_mongodb()
 
         # Load result after list channels selection
-        record_set_id = record_set_processor.load_source_data(db_result[cons.COLLECTION_ECG_NAME], db_result[cons.COLLECTION_RECORD_SET_NAME])
+        record_set_id = record_set_processor.load_source_data(db_result)
 
         if record_set_id:
             st.success('Added successfully!')
+
 elif add_selectbox == "exporting template":
     form_result = template_export_view.load_form()
-
-    # Open MongoDB connection
-    # db_result = con.connect_mongodb()
-
-    # Load all channels
-    # list_channel = manage_channel_processor.load_list_channel(channel_col)
-
-    # add_clicked, load_list_clicked = template_export_view.load_button()
 
     # Retrieve data from the view
     create_clicked = form_result[cons.CONS_BUTTON_CREATE]
@@ -168,7 +147,7 @@ elif add_selectbox == "exporting template":
             st.warning('Please try again!')
 
 elif add_selectbox == "export data":
-    load_data_clicked = export_data.load_form()
+    load_data_clicked = export_data_view.load_form()
     if load_data_clicked or st.session_state.extract_anno:
         st.session_state.extract_anno = True
 

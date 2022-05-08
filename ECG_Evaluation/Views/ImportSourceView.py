@@ -29,7 +29,7 @@ def render_property(ecg_property : ECG, total_channels):
             st.markdown(channel_guideline, unsafe_allow_html=True)
 
         # Total channels
-        total_channels = st.text('Total channels: ' + str(total_channels))
+        total_channels = st.text(f'Total channels: {str(total_channels)}')
     with col2:
         # sample_rate = st.slider('Sample rate', 0, 10000,
         #                        ecg_property.sample_rate)
@@ -37,26 +37,34 @@ def render_property(ecg_property : ECG, total_channels):
         # Sample rate
         if ecg_property.sample_rate:
             sample_rate = ecg_property.sample_rate
-            st.text('Sample rate: ' + str(sample_rate))
+            st.text(f'Sample rate: {str(sample_rate)}')
         else:
             sample_rate = st.number_input('Sample rate',min_value=1,step=1)
 
         # Time
         if ecg_property.time:
             time = ecg_property.time
-            st.text('Time(s): ' + str(time))
+            st.text(f'Time(s): {str(time)}')
         else:
             time = st.number_input('Time(s)',min_value=1,step=1)
         
         # Sample
-        st.text('Samples: ' + str(len(ecg_property.sample)))
-    
+        st.text(f'Samples: {str(len(ecg_property.sample))}')
+
+        # Amplitude Unit
+        unit = st.text(f'Unit: {ecg_property.unit}')
+
+        # Description
+        comments = st.text_area('Comments', 'Add any comments here', height=120)
+
     result = {
         cons.ECG_SOURCE: source,
         cons.ECG_CHANNEL: channel,
         cons.ECG_CHANNEL_TEXT: is_channel_from_source,
         cons.ECG_SAMPLE_RATE: sample_rate,
         cons.ECG_TIME: time,
-        cons.ECG_TOTAL_CHANNELS: total_channels
+        cons.ECG_TOTAL_CHANNELS: total_channels,
+        cons.ECG_UNIT: unit,
+        cons.ECG_COMMENTS: comments
     }
     return result

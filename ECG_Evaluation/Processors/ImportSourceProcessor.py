@@ -1,23 +1,13 @@
-from bson.objectid import ObjectId
-from pymongo import helpers
 import streamlit as st
-import wfdb
-from datetime import datetime
-import pandas as pd
 import Controllers.Constants as cons
 import Controllers.Common as common
-from Controllers.RecordSetModel import RecordSet
-from Controllers.ExportingTemplateModel import ExportingTemplate
-import Scrapers.ExportDataScraper as export_data_scraper
-import Views.DownloadChannel as download_channel
 import Scraper as scraper
-import Scrapers.RecordSetScraper as record_set_scraper
 from Controllers.ECGModel import ECG
 import Controllers.Helper as helper
 import os
-import Controllers.WFDBHelper as wfdb_helper
 from Controllers.FilesModel import Files
 import numpy as np
+import Views.ImportSourceView as import_source_view
 
 class ImportSourceProcessor:
     def process_file(self, dir_name):
@@ -38,6 +28,56 @@ class ImportSourceProcessor:
             st.error('Cannot read source folder!')
             st.stop()
         return np.concatenate((file_list, dir_list), axis=1), file_name
+
+    def render_property(self, ecg_property : ECG):
+        # Count number of channels from source
+        total_channels = len(ecg_property.sample[0])
+
+        # Get result after rendering property
+        # result = {
+        #    cons.ECG_SOURCE: source,
+        #    cons.ECG_CHANNEL: channel,
+        #    cons.ECG_SAMPLE_RATE: sample_rate,
+        #    cons.ECG_TIME: time,
+        #    cons.ECG_TOTAL_CHANNELS: total_channels
+        #   }
+        result = import_source_view.render_property(ecg_property, total_channels)
+
+        # Check if the unit is undefined
+        unit = result[cons.ECG_UNIT]
+        if unit == cons.CONS_UNDEFINED:
+            return None
+
+        # Count number of channels when missing recording metadata
+        # User will enter the channel manually (Ex: I;II;III)
+        is_channel_from_source = result[cons.ECG_CHANNEL_TEXT]
+        channel = result[cons.ECG_CHANNEL]
+        
+        # Process to get list of channel when user enters manually
+        if (not is_channel_from_source):
+            channel = common.convert_string_to_list(channel, cons.CONS_SEMICOLON)
+            
+        # Check input channels vs total channels of source
+        # First check is used for channels, which entered manually
+        # Second check is used for channels, which came from the source
+        if ((not is_channel_from_source and ((channel[0] == '' and total_channels == len(channel)) or (not channel[0] == '' and not total_channels == len(channel)))) or 
+            ecg_property.channel and not len(ecg_property.channel) == len(channel)):
+            st.error('Input channels must be equal to the total channels of the source!')
+            return None
+        else:
+            return ECG(
+                source=result[cons.ECG_SOURCE],
+                file_name=ecg_property.file_name,
+                channel=channel,
+                sample=len(ecg_property.sample),
+                time=result[cons.ECG_TIME],
+                sample_rate=result[cons.ECG_SAMPLE_RATE],
+                ecg=ecg_property.ecg,
+                created_date=ecg_property.created_date,
+                modified_date=ecg_property.modified_date,
+                unit=ecg_property.unit,
+                comments=result[cons.ECG_COMMENTS]
+            )
 
     def save_ecg_property(self, db_result, file_list, file_name, final_ecg_property):
         db= db_result[cons.DB_NAME]

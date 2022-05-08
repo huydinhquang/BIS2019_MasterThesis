@@ -2,16 +2,12 @@ from ECGController import ECGController
 import streamlit as st
 from Controllers.ECGModel import ECG
 import wfdb
-# import pandas as pd
 import Controllers.Constants as cons
-# import Controllers.Common as common
 import os
 from pathlib import Path
 import shutil
 import numpy as np
 import matplotlib.pyplot as plt
-# import Views.DBImport as db_import
-# import Views.DownloadChannel as download_channel
 
 class WFDBController(ECGController):
     def __init__(self, dir_name, file_name, file_list):
@@ -21,12 +17,20 @@ class WFDBController(ECGController):
         signals, fields = wfdb.rdsamp(os.path.join(self.dir_name,self.file_name))
         # headers = wfdb.rdheader(dir_name + '/' + file_name)
         fs = fields[cons.SAMPLING_FREQUENCY]
+        # Distinct list of Amplitude unit if they have the same value
+        list_unit = list(dict.fromkeys(fields[cons.AMPLITUDE_UNIT]))
+        # Return the only one value (Ex: mV or V). Otherwise, return 'undefined' list due to the differece between signals
+        if len(list_unit) == 1:
+            unit = list_unit[0]
+        else:
+            unit = cons.CONS_UNDEFINED
         time = round(len(signals) / fs)
         channels = [item.upper() for item in fields[cons.SINGAL_NAME]] 
         return ECG(
             file_name=self.file_name,
             channel=channels,
             sample=signals,
+            unit=unit,
             time=time,
             sample_rate=fs,
             ecg=self.file_list.shape[0], # Total number of ECG files
