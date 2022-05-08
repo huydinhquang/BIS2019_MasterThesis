@@ -45,13 +45,24 @@ def get_folder_download(ecg: ECG, list_files:list[Files]):
     # Get the first element if it matches the provided ECG Id
     return next(x.folder_download for x in list_files if x.ecg_id == ecg.id)
 
-def create_hdf5(file_path, file_name, dataset_name, dataset_value):
+def create_hdf5(file_path, file_name, list_dataset):
     ### ---------------- Get the shape of the dataset - It is 3D tensor -----------------   ###
     # Height: 1st dimension is the total number of samples (length)         --> shape[2]    ###
-    # Width: 2nd dimension is the number of channels                       --> shape[1]     ###
-    # Depth: 3rd dimension is the total number of slices from all records  --> shape[0]     ###
+    # Width: 2nd dimension is the number of channels                        --> shape[1]    ###
+    # Depth: 3rd dimension is the total number of slices from all records   --> shape[0]    ###
     ### ---------------------------------------------------------------------------------   ###
-    data_shape = np.array(dataset_value).shape
     with h5py.File(f'{file_path}/{file_name}','w') as file:
-        dset1 = file.create_dataset(dataset_name, (data_shape[0],data_shape[1],data_shape[2]), dtype='f', data=dataset_value)
-        dset1.attrs['qhi'] = 'test'
+        for ds in list_dataset:
+            dataset_value = ds[cons.CONS_DS_DATA]
+            data_shape = np.array(dataset_value).shape
+            if len(data_shape) > 2:
+                ds_result = file.create_dataset(ds[cons.CONS_DS_NAME], (data_shape[0],data_shape[1],data_shape[2]), dtype='f', data=dataset_value)
+            elif len(data_shape) == 2:
+                dt = h5py.special_dtype(vlen=bytes)
+                ds_result = file.create_dataset(ds[cons.CONS_DS_NAME], (data_shape[0],data_shape[1]), dtype=dt, data=dataset_value)
+            else:
+                dt = h5py.special_dtype(vlen=bytes)
+                ds_result = file.create_dataset(ds[cons.CONS_DS_NAME], (data_shape[0]), dtype=dt, data=dataset_value)
+            list_metadata = ds[cons.CONS_DS_METADATA]
+            for x in list_metadata:
+                ds_result.attrs[x] = list_metadata[x]

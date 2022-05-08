@@ -67,6 +67,7 @@ CONS_COMMA = ','
 CONS_SEMICOLON = ';'
 
 # Global
+CONS_FILE_NAME = 'file_name'
 CONS_CHANNEL = 'channel'
 CONS_CREATED_DATE = 'created_date'
 CONS_MODIFIED_DATE = 'modified_date'
@@ -74,6 +75,11 @@ CONS_ID_SHORT = '_id'
 CONS_BUTTON_CREATE = 'create_clicked'
 CONS_FILE_LIST = 'file_list'
 CONS_DIR_LIST = 'dir_list'
+CONS_DATE = 'Date'
+CONS_METADATA = 'metadata'
+CONS_DS_NAME = 'ds_name'
+CONS_DS_DATA = 'ds_data'
+CONS_DS_METADATA = 'ds_metadata'
 
 # Record Set
 CONS_RECORD_SET_NAME = 'record_set_name'
@@ -90,3 +96,7 @@ CONS_QUERY_FOREIGNFIELD = 'foreignField'
 CONS_QUERY_AS = 'as'
 CONS_QUERY_MATCH_QUERY = '$match'
 CONS_QUERY_LOOKUP_QUERY = '$lookup'
+
+# HDF5 Attribute
+CONS_HDF5_DS_SIGNAL = 'dataset_signal'
+CONS_HDF5_DS_RECORDSET = 'dataset_recordset'

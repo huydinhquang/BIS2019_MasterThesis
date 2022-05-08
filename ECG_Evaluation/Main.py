@@ -177,14 +177,3 @@ elif add_selectbox == "export data":
 
         # Load result after list channels selection
         record_set_id = export_data_processor.load_data(db_result)
-        
-        # Process to get the list of files when selecting the folder
-        # file_list = processor.process_folder(dir_name)
-
-        # Read ECG properties when user selects a source
-        # ecg_property = read_property(dir_name, file_name, file_list, format_desc.lower())
-
-        # processor.load_download_source(file_list)
-        # Read ECG properties
-        # if ecg_property:
-        #     read_downloaded_property(ecg_property)

@@ -157,9 +157,9 @@ class ExportDataProcessor:
                 # Every form must have a submit button.
                 extract_clicked = st.form_submit_button("Extract data")
                 if extract_clicked:
-                    self.extract_data(db_result,ecg_data, folder_download,exp_tem_selected_rows)
+                    self.extract_data(db_result,ecg_data, folder_download,record_set_selected_rows,exp_tem_selected_rows)
 
-    def extract_data(self,db_result, ecg_data:list[ECG], folder_download,exp_tem_selected_rows):
+    def extract_data(self,db_result, ecg_data:list[ECG], folder_download,record_set,exp_tem):
         db= db_result[cons.DB_NAME]
         # Loop record in selected RecordSet
         for x in ecg_data:
@@ -181,11 +181,12 @@ class ExportDataProcessor:
             x.folder_download = download_location
 
         # Retrieve Target sample rate, Duration, list of channels from Exporting Template
-        target_sample_rate = int(exp_tem_selected_rows[cons.HEADER_TARGET_SAMPLE_RATE])
-        duration = int(exp_tem_selected_rows[cons.HEADER_DURATION])
-        list_channels = common.convert_string_to_list(exp_tem_selected_rows[cons.HEADER_CHANNEL], cons.CONS_COMMA, True)
+        target_sample_rate = int(exp_tem[cons.HEADER_TARGET_SAMPLE_RATE])
+        duration = int(exp_tem[cons.HEADER_DURATION])
+        list_channels = common.convert_string_to_list(exp_tem[cons.HEADER_CHANNEL], cons.CONS_COMMA, True)
 
         # Create a new matrix to store resampled signal by record
+        dataset_signal = []
         dataset_record = []
         for x in ecg_data:
             # Get downloaded location of the ECG record
@@ -238,17 +239,54 @@ class ExportDataProcessor:
                 # Create a new list for each channel array (signal data)
                 list_channels_signal = np.array_split(slice, number_channel, axis=1)
                 # Create a new matrix to store resampled signal by channel
-                dataset_channel = []
+                list_resampled_signal = []
+                list_channel_name = []
                 for idx, signal in enumerate(list_channels_signal):
                     # Find the channel name from exporting template channels according to the index of list of channels signal
                     current_channel_name = list_channels[idx]
                     # Calculate the new data point as the resampling process
                     resampled_signal = wfdb_helper.resampling_data(signal, target_sample_rate, ecg_property.sample_rate)
                     # Append the matrix based on the sequence 
-                    dataset_channel.append(resampled_signal)
-                    wfdb_helper.visualize_chart(x.file_name, current_channel_name, signal, ecg_property.sample_rate, resampled_signal, target_sample_rate)
-                dataset_record.append(dataset_channel)
-                    
-        helper.create_hdf5('C:/Users/HuyDQ/OneDrive/HuyDQ/OneDrive/MasterThesis/Thesis/DB/Download', 'file.h5', 'dataset_signal', dataset_record)
+                    list_resampled_signal.append(resampled_signal)
+                    list_channel_name.append(current_channel_name)
+                    # wfdb_helper.visualize_chart(x.file_name, current_channel_name, signal, ecg_property.sample_rate, resampled_signal, target_sample_rate)
+                dataset_signal.append(list_resampled_signal)
+                dataset_record.append(x.file_name)
+
+        # Retrieve record set name from RecordSet
+        record_set_name = record_set[cons.HEADER_RECORD_SET]
+        # Get current date time in string
+        current_time = common.convert_current_time_to_str()
+        # Build file name for the output
+        file_name = '{}_{}.h5'.format(record_set_name,current_time)
+        
+        ### Build metadata ###
+        # For dataset signal
+        metadata_signal = {}
+        metadata_signal[cons.CONS_DATE] = current_time
+        metadata_signal[cons.HEADER_CHANNEL] = exp_tem[cons.HEADER_CHANNEL]
+        # For dataset recordset
+        metadata_record_set = {}
+        metadata_record_set[cons.CONS_DATE] = current_time
+        metadata_record_set[cons.HEADER_SAMPLE_RATE] = target_sample_rate
+        metadata_record_set[cons.HEADER_TIME] = duration
+        metadata_record_set[cons.HEADER_CHANNEL] = exp_tem[cons.HEADER_CHANNEL]
+        ### --- ###
+
+        list_dataset = []
+        list_dataset.extend([{
+            cons.CONS_DS_NAME: cons.CONS_HDF5_DS_SIGNAL,
+            cons.CONS_DS_DATA: dataset_signal,
+            cons.CONS_DS_METADATA: metadata_signal
+            },
+            {
+            cons.CONS_DS_NAME: cons.CONS_HDF5_DS_RECORDSET,
+            cons.CONS_DS_DATA: dataset_record,
+            cons.CONS_DS_METADATA: metadata_record_set
+            }
+        ])
+
+        # Write signal data into the hfd5 file
+        helper.create_hdf5(folder_download, file_name, list_dataset)
 
         st.success('Extract completed!')
