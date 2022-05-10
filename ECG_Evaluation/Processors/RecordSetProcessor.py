@@ -72,7 +72,7 @@ class RecordSetProcessor:
             selected_rows = df.loc[selected_indices]
             st.write('### Selected Rows', selected_rows)
 
-            record_set_name, region_start, region_end, create_clicked = record_set_view.record_set()
+            record_set_name, create_clicked = record_set_view.record_set()
             if create_clicked:
                 list_selected_ecg = []
                 for index, row in selected_rows.iterrows():

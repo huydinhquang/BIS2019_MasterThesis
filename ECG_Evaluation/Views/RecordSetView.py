@@ -27,10 +27,10 @@ def record_set():
     st.write('### Record set creation')
     with st.form('Record set creation'):
         record_set_name = st.text_input('Record set name')
-        region_start = st.number_input('Region start', min_value=0)
-        region_end = st.number_input('Region end', min_value=0)
+        # region_start = st.number_input('Region start', min_value=0)
+        # region_end = st.number_input('Region end', min_value=0)
         create_clicked = st.form_submit_button('Create')
-        return record_set_name, region_start, region_end, create_clicked
+        return record_set_name, create_clicked
 
 def render_download_section():
     folder_download = st.text_input(label='Downloadable folder:', value="C:/Users/HuyDQ/OneDrive/HuyDQ/OneDrive/MasterThesis/Thesis/DB/Download")
