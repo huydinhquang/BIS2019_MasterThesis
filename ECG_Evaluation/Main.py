@@ -76,7 +76,7 @@ def read_downloaded_property(ecg_property):
 
 add_selectbox = st.sidebar.selectbox(
     "Task",
-    ("Home page", "Channel Management", "Import Source", "Record Set", "Exporting Template", "Export Data")
+    ("Home page", "Import Source", "Record Set", "Exporting Template", "Export Data")
 )
 
 add_selectbox = add_selectbox.lower()

@@ -99,7 +99,7 @@ class ExportDataProcessor:
         st.write('### Full RecordSet', df_record_set)
         st.info('Total items: {}'.format(str(count_record_set)))
 
-        record_set_selected_indices = st.selectbox('Select rows:', df_record_set.index)
+        record_set_selected_indices = st.selectbox('Select rows:', df_record_set.index, key=record_set_col.name)
         record_set_selected_rows = df_record_set.loc[record_set_selected_indices]
         st.write('### Selected Rows', record_set_selected_rows)
             
@@ -108,7 +108,7 @@ class ExportDataProcessor:
         st.write('### Full Exporting Template', df_exp_tem)
         st.info('Total items: {}'.format(str(count_exp_tem)))
         
-        exp_tem_selected_indices = st.selectbox('Select rows:', df_exp_tem.index)
+        exp_tem_selected_indices = st.selectbox('Select rows:', df_exp_tem.index, key=exp_tem_col.name)
         exp_tem_selected_rows = df_exp_tem.loc[exp_tem_selected_indices]
         st.write('### Selected Rows', exp_tem_selected_rows)
 
