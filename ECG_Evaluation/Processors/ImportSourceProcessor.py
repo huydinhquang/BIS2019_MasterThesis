@@ -33,6 +33,13 @@ class ImportSourceProcessor:
         # Count number of channels from source
         total_channels = len(ecg_property.sample[0])
 
+        # Check if the unit is None, set [mV, V] as options for the selectbox
+        # Otherwise, set the current value to the list for the selectbox
+        if ecg_property.unit:
+            ecg_property.unit = [ecg_property.unit]
+        else:
+            ecg_property.unit = [cons.CONS_UNIT_MV, cons.CONS_UNIT_V]
+
         # Get result after rendering property
         # result = {
         #    cons.ECG_SOURCE: source,
@@ -42,11 +49,6 @@ class ImportSourceProcessor:
         #    cons.ECG_TOTAL_CHANNELS: total_channels
         #   }
         result = import_source_view.render_property(ecg_property, total_channels)
-
-        # Check if the unit is undefined
-        unit = result[cons.ECG_UNIT]
-        if unit == cons.CONS_UNDEFINED:
-            return None
 
         # Count number of channels when missing recording metadata
         # User will enter the channel manually (Ex: I;II;III)
@@ -75,7 +77,7 @@ class ImportSourceProcessor:
                 ecg=ecg_property.ecg,
                 created_date=ecg_property.created_date,
                 modified_date=ecg_property.modified_date,
-                unit=ecg_property.unit,
+                unit=result[cons.ECG_UNIT],
                 comments=result[cons.ECG_COMMENTS]
             )
 

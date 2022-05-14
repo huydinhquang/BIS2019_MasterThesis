@@ -52,7 +52,7 @@ def render_property(ecg_property : ECG, total_channels):
         st.text(f'Samples: {str(len(ecg_property.sample))}')
 
         # Amplitude Unit
-        unit = st.text(f'Unit: {ecg_property.unit}')
+        unit = st.selectbox('Unit', options=ecg_property.unit)
 
         # Description
         comments = st.text_area('Comments', 'Add any comments here', height=120)

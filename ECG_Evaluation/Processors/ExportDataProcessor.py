@@ -139,27 +139,35 @@ class ExportDataProcessor:
             # Get text of channels based on selected exporting template
             list_channels_str = 'Channel {}'.format(exp_tem_selected_rows[cons.HEADER_CHANNEL])
             
+            # Retrieve list of channels from Exporting Template
+            list_channels = common.convert_string_to_list(exp_tem_selected_rows[cons.HEADER_CHANNEL], cons.CONS_COMMA, True)
+
             with st.form("extract_data_form"):
                 # Widgets will be genrated by the number of ECG records
                 # This is used for mapping channel between ECG record and Exporting template
                 for x in ecg_data:
                     st.write('{} from selected exporting template'.format(list_channels_str))
-                    st.multiselect('Record: {}'.format(x.file_name), x.channel, key=str(x.id))
+                    # Try to map channels with the common names, which are defined in the exporting template (Ex: I, II, III)
+                    list_existed_channels = helper.get_list_existed_channels(list_channels, x.channel)
+                    if list_existed_channels:
+                        st.multiselect(label='Record: {}'.format(x.file_name), options=x.channel, default=list_existed_channels, key=str(x.id))
+                    else:
+                        st.multiselect(label='Record: {}'.format(x.file_name), options=x.channel, key=str(x.id))
 
                 folder_download = st.text_input(label='Downloadable folder:', value="C:/Users/HuyDQ/OneDrive/HuyDQ/OneDrive/MasterThesis/Thesis/DB/Download")
 
                 # Every form must have a submit button.
                 extract_clicked = st.form_submit_button("Extract data")
                 if extract_clicked:
-                    self.extract_data(db_result,ecg_data, folder_download,record_set_selected_rows,exp_tem_selected_rows)
+                    self.extract_data(db_result,ecg_data, folder_download,record_set_selected_rows,exp_tem_selected_rows, list_channels)
 
-    def extract_data(self,db_result, ecg_data:list[ECG], folder_download,record_set,exp_tem):
+    def extract_data(self,db_result, ecg_data:list[ECG], folder_download,record_set,exp_tem, list_channels):
         db= db_result[cons.DB_NAME]
         # Loop record in selected RecordSet
         for x in ecg_data:
             selected_channel = st.session_state[x.id]
-            channel_index = helper.get_channel_index(selected_channel, x.channel)
-            x.channel_index=channel_index
+            list_channels_index = helper.get_list_channels_index(selected_channel, x.channel)
+            x.channel_index=list_channels_index
 
         list_selected_ecg_id = [x.id for x in ecg_data]
 
@@ -177,7 +185,6 @@ class ExportDataProcessor:
         # Retrieve Target sample rate, Duration, list of channels from Exporting Template
         target_sample_rate = int(exp_tem[cons.HEADER_TARGET_SAMPLE_RATE])
         duration = int(exp_tem[cons.HEADER_DURATION])
-        list_channels = common.convert_string_to_list(exp_tem[cons.HEADER_CHANNEL], cons.CONS_COMMA, True)
 
         # Create a new matrix to store resampled signal by record
         dataset_signal = []

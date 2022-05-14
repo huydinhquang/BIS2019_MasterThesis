@@ -87,6 +87,8 @@ CONS_METADATA = 'metadata'
 CONS_DS_NAME = 'ds_name'
 CONS_DS_DATA = 'ds_data'
 CONS_DS_METADATA = 'ds_metadata'
+CONS_UNIT_MV = 'mV'
+CONS_UNIT_V = 'V'
 
 # Record Set
 CONS_RECORD_SET_NAME = 'record_set_name'

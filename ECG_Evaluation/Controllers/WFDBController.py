@@ -19,11 +19,10 @@ class WFDBController(ECGController):
         fs = fields[cons.SAMPLING_FREQUENCY]
         # Distinct list of Amplitude unit if they have the same value
         list_unit = list(dict.fromkeys(fields[cons.AMPLITUDE_UNIT]))
-        # Return the only one value (Ex: mV or V). Otherwise, return 'undefined' list due to the differece between signals
+        # Return the only one value (Ex: mV or V). Otherwise, return 'None' list due to the differece between signals
+        unit = None
         if len(list_unit) == 1:
             unit = list_unit[0]
-        else:
-            unit = cons.CONS_UNDEFINED
         time = round(len(signals) / fs)
         channels = [item.upper() for item in fields[cons.SINGAL_NAME]] 
         return ECG(

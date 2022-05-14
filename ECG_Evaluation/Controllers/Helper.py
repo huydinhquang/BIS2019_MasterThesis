@@ -23,7 +23,7 @@ def write_file(download_location, file_name, output_data):
     output.write(output_data)
     output.close()
 
-def get_channel_index(channel, list_channel):
+def get_list_channels_index(channel, list_channel):
     result = []
     for x in channel:
         for index, y in enumerate(list_channel):
@@ -32,6 +32,15 @@ def get_channel_index(channel, list_channel):
                 break
     return result
     # return [index for index, y in enumerate(list_channel) for x in channel if x==y] # Wrong output order if we use this formula
+
+def get_list_existed_channels(channel, list_channel):
+    result = []
+    for x in channel:
+        for y in list_channel:
+            if x == y:
+                result.append(y)
+                break
+    return result
 
 def create_folder(path):
     # Check whether the specified path exists or not
