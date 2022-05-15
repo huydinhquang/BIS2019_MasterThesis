@@ -3,6 +3,7 @@ from Processors.ExportDataProcessor import ExportDataProcessor
 import Views.ManageChannelView as manage_channel_view
 import Views.TemplateExportationView as template_export_view
 import Views.ImportSourceView as import_source_view
+import Views.ImportSourceMassView as import_source_mass_view
 import Views.RecordSetView as record_set_view
 import Views.ExportDataView as export_data_view
 import Controllers.MongoDBConnection as con
@@ -76,33 +77,13 @@ def read_downloaded_property(ecg_property):
 
 add_selectbox = st.sidebar.selectbox(
     "Task",
-    ("Home page", "Import Source", "Record Set", "Exporting Template", "Export Data")
+    ("Home page", "Import Source", "Import Source - Mass Import", "Record Set", "Exporting Template", "Export Data")
 )
 
 add_selectbox = add_selectbox.lower()
-if add_selectbox == "channel management":
-    new_channel, add_clicked, load_list_clicked = manage_channel_view.load_form()
-
-    if load_list_clicked:
-        # Open MongoDB connection
-        my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
-
-        # Load all channels
-        manage_channel_processor.load_list_channel(channel_col)
-    
-    if add_clicked:
-        # Open MongoDB connection
-        my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
-
-        channel_id = manage_channel_scraper.add_channel(channel_col, new_channel)
-        if channel_id:
-            st.success('Added successfully!')
-        else:
-            st.warning('Please try again!')
-
-elif add_selectbox == "import source":
-    dir_name, format_desc, clicked = import_source_view.load_form()
-    if clicked or st.session_state.get_data:
+if add_selectbox == "import source":
+    dir_name, format_desc, retrieve_clicked = import_source_view.load_form()
+    if retrieve_clicked or st.session_state.get_data:
         st.session_state.get_data = True
 
         # Process to get the list of files when selecting the folder
@@ -114,6 +95,40 @@ elif add_selectbox == "import source":
         # Read Final ECG properties
         if ecg_property:
             read_final_property(ecg_property, file_list,file_name)
+
+    # new_channel, add_clicked, load_list_clicked = manage_channel_view.load_form()
+
+    # if load_list_clicked:
+    #     # Open MongoDB connection
+    #     my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
+
+    #     # Load all channels
+    #     manage_channel_processor.load_list_channel(channel_col)
+    
+    # if add_clicked:
+    #     # Open MongoDB connection
+    #     my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
+
+    #     channel_id = manage_channel_scraper.add_channel(channel_col, new_channel)
+    #     if channel_id:
+    #         st.success('Added successfully!')
+    #     else:
+    #         st.warning('Please try again!')
+
+elif add_selectbox == "import source - mass import":
+    dir_name, format_desc, retrieve_clicked = import_source_mass_view.load_form()
+    if retrieve_clicked or st.session_state.get_data:
+        st.session_state.get_data = True
+
+        # Process to get the list of files when selecting the folder
+        file_list, file_name = import_source_processor.process_file(dir_name)
+
+        # Read ECG properties when user selects a source
+        # ecg_property = read_property(dir_name, file_list, file_name,format_desc.lower())
+
+        # Read Final ECG properties
+        # if ecg_property:
+        #     read_final_property(ecg_property, file_list,file_name)
 
 elif add_selectbox == "record set":
     load_source_list_clicked = record_set_view.load_form()

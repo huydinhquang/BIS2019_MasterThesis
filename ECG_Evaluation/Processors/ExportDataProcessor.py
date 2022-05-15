@@ -250,6 +250,7 @@ class ExportDataProcessor:
                     # Append the matrix based on the sequence 
                     list_resampled_signal.append(resampled_signal)
                     list_channel_name.append(current_channel_name)
+                    # Visualize each slice of the record (this can reduce the performance)
                     # wfdb_helper.visualize_chart(x.file_name, current_channel_name, signal, ecg_property.sample_rate, resampled_signal, target_sample_rate)
                 dataset_signal.append(list_resampled_signal)
                 dataset_record.append(x.file_name)

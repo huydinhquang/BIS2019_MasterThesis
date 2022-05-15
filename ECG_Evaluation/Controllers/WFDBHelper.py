@@ -88,9 +88,9 @@ def visualize_chart(file_name, channel_name, signal, fs, resampled_signal, fs_ta
 
     fig, axs = plt.subplots(2)
     fig.suptitle('File name: {}, ExpTemp channel: {}'.format(file_name, channel_name))
-    axs[0].plot(time_signal, signal, color='blue', marker='o')#, label='Sample rate: ' + str(fs) + ' - Number of samples: ' + str(len(signal)))
+    axs[0].plot(time_signal, signal, color='blue', marker='x')#, label='Sample rate: ' + str(fs) + ' - Number of samples: ' + str(len(signal)))
     axs[0].set_title('Feq: {} - Samples: {}'.format(str(fs),str(len(signal))))
-    axs[1].plot(time_resampled_signal, resampled_signal, color='orange', marker='o')#,label='Sample rate: ' + str(fs_target) + ' - Number of samples: ' + str(len(resampled_signal)))
+    axs[1].plot(time_resampled_signal, resampled_signal, color='orange', marker='x')#,label='Sample rate: ' + str(fs_target) + ' - Number of samples: ' + str(len(resampled_signal)))
     axs[1].set_title('Feq: {} - Samples: {}'.format(str(fs_target), str(len(resampled_signal))))
 
     for ax in axs.flat:
