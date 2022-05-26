@@ -8,12 +8,12 @@ class SciPyController(ECGController):
         super().__init__(dir_name, file_name, file_list)
 
     def get_source_property(self):
-        mat = scipy.io.loadmat(self.file_list[0][1][cons.CONS_DIR_LIST])
-        signals = mat['ecg']
+        mat = scipy.io.loadmat(self.file_list[0])
+        signals = mat[cons.CONS_ECG]
         return ECG(
             file_name=self.file_name,
             sample=signals,
-            ecg=self.file_list.shape[0], # Total number of ECG files
+            ecg=len(self.file_list), # Total number of ECG files
             created_date=self.current_date,
             modified_date=self.current_date
         )

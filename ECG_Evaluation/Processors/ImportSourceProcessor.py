@@ -12,22 +12,24 @@ import Views.ImportSourceView as import_source_view
 class ImportSourceProcessor:
     def process_file(self, dir_name):
         file_list=[]
-        dir_list=[]
-        file_name=None
         for root, dirs, files in os.walk(dir_name):
             for file in files:
-                file_list.append([
-                    {cons.CONS_FILE_LIST:file}
-                    ])
-                dir_list.append([
-                    {cons.CONS_DIR_LIST:os.path.join(dir_name,file)}
-                    ])
-                if not file_name:
-                    file_name = helper.get_file_name(file)
-        if not file_list or not dir_list:
+                file_name= helper.get_file_name(file)
+                file_path = os.path.join(dir_name,file)
+                file_index = helper.get_file_index(file_name, file_list)
+                if isinstance(file_index, int):
+                    file_list[file_index].file_name_ext.append(file)
+                    file_list[file_index].file_path.append(file_path)
+                else:
+                    file_list.append(Files(
+                        file_name_ext=[file],
+                        file_path=[file_path],
+                        file_name=file_name
+                    ))
+        if not file_list:
             st.error('Cannot read source folder!')
             st.stop()
-        return np.concatenate((file_list, dir_list), axis=1), file_name
+        return file_list
 
     def render_property(self, ecg_property : ECG):
         # Count number of channels from source
@@ -81,17 +83,18 @@ class ImportSourceProcessor:
                 comments=result[cons.ECG_COMMENTS]
             )
 
-    def save_ecg_property(self, db_result, file_list, file_name, final_ecg_property):
+    def save_ecg_property(self, db_result, list_file_path, list_file_name_ext, file_name, final_ecg_property:ECG):
         db= db_result[cons.DB_NAME]
         ecg_col= db_result[cons.COLLECTION_ECG_NAME]
 
         ecg_id = scraper.save_ecg_property(ecg_col, final_ecg_property)
         if ecg_id:
             list_file_id = []
-            for item in file_list:
+            for index, item in enumerate(list_file_path):
+                file_name_ext= list_file_name_ext[index]
                 file_metadata = Files(
-                    file_path=item[1][cons.CONS_DIR_LIST],
-                    file_name_ext=item[0][cons.CONS_FILE_LIST],
+                    file_path=item,
+                    file_name_ext=file_name_ext,
                     file_name=file_name, 
                     ecg_id=ecg_id
                     )

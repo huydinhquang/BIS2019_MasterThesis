@@ -1,22 +1,22 @@
 import streamlit as st
+from ECG_Evaluation.Controllers.FilesModel import Files
 from Processors.ExportDataProcessor import ExportDataProcessor
-import Views.ManageChannelView as manage_channel_view
 import Views.TemplateExportationView as template_export_view
 import Views.ImportSourceView as import_source_view
 import Views.ImportSourceMassView as import_source_mass_view
 import Views.RecordSetView as record_set_view
 import Views.ExportDataView as export_data_view
 import Controllers.MongoDBConnection as con
-import Scraper as scraper
-import Scrapers.ManageChannelScraper as manage_channel_scraper
 import Scrapers.TemplateExportationScraper as template_export_scraper
-from Controllers.WFDBController import WFDBController
-from Controllers.SciPyController import SciPyController
-from Processor import Processor
+# from Controllers.WFDBController import WFDBController
+# from Controllers.SciPyController import SciPyController
+# from Processor import Processor
 from Processors.ManageChannelProcessor import ManageChannelProcessor
 from Processors.RecordSetProcessor import RecordSetProcessor
 from Processors.ImportSourceProcessor import ImportSourceProcessor
+from Processors.ImportSourceMassProcessor import ImportSourceMassProcessor
 import Controllers.Constants as cons
+import Controllers.WFDBHelper as wfdb_helper
 
 st.title('ECG System')
 
@@ -34,21 +34,15 @@ if 'load_channel_list' not in st.session_state:
 if 'generate_channel' not in st.session_state:
 	st.session_state.generate_channel = False
 
-processor = Processor()
+# processor = Processor()
 manage_channel_processor = ManageChannelProcessor()
 record_set_processor = RecordSetProcessor()
 export_data_processor = ExportDataProcessor()
 import_source_processor = ImportSourceProcessor()
+import_source_mass_processor = ImportSourceMassProcessor()
 
-def read_property(dir_name, file_list, file_name,format_desc):
-    # Read source ecg property    
-    if format_desc == 'wfdb':
-        processor.add(WFDBController(dir_name, file_name, file_list))
-    else:
-        processor.add(SciPyController(dir_name, file_name, file_list))
-    return processor.get_source_property()
 
-def read_final_property(ecg_property, file_list, file_name):
+def read_final_property(ecg_property, file_path, file_name_ext, file_name):
     # Get final ecg property
     final_ecg_property = import_source_processor.render_property(ecg_property)
 
@@ -59,21 +53,7 @@ def read_final_property(ecg_property, file_list, file_name):
             db_result = con.connect_mongodb()
 
             # Save ECG properties
-            import_source_processor.save_ecg_property(db_result, file_list, file_name,final_ecg_property)
-
-def read_downloaded_property(ecg_property):
-    processor.render_property(ecg_property)
-    sample_rate_val = 1
-    if ecg_property.sample_rate:
-        sample_rate_val = ecg_property.sample_rate
-    sample_rate = st.sidebar.number_input('Sample rate', min_value=0,max_value=10000,value=sample_rate_val)
-    signal_start = st.sidebar.number_input('Time start', min_value=0,max_value=10000,value=10)
-    signal_end = st.sidebar.number_input('Time end', min_value=0,max_value=10000,value=250)
-    interpolate_signal = st.sidebar.button('Interpolate visualization')
-    if interpolate_signal:
-        st.write('### Interpolate visualization')
-        # ecg_property = read_property(dir_name, file_name, file_list, format_desc.lower(), signal_start, signal_end, 10)
-        processor.visualize_chart(ecg_property.sample[:,0], sample_rate, ecg_property.sample_rate)
+            import_source_processor.save_ecg_property(db_result, file_path, file_name_ext, file_name,final_ecg_property)
 
 add_selectbox = st.sidebar.selectbox(
     "Task",
@@ -87,14 +67,19 @@ if add_selectbox == "import source":
         st.session_state.get_data = True
 
         # Process to get the list of files when selecting the folder
-        file_list, file_name = import_source_processor.process_file(dir_name)
+        file_list:list[Files] = import_source_processor.process_file(dir_name)
 
-        # Read ECG properties when user selects a source
-        ecg_property = read_property(dir_name, file_list, file_name,format_desc.lower())
+        if file_list and len(file_list) > 1:
+            st.warning(f'There are more than one source. Please use \'Import Source - Mass Import\' function')
+        else:
+            for ecg_record in file_list:
+                # Read ECG properties when user selects a source
+                ecg_property = wfdb_helper.read_property(dir_name, ecg_record.file_path, ecg_record.file_name,format_desc.lower())
 
-        # Read Final ECG properties
-        if ecg_property:
-            read_final_property(ecg_property, file_list,file_name)
+                # Read Final ECG properties
+                if ecg_property:
+                    read_final_property(ecg_property, ecg_record.file_path, ecg_record.file_name_ext, ecg_record.file_name)
+            
 
     # new_channel, add_clicked, load_list_clicked = manage_channel_view.load_form()
 
@@ -121,14 +106,20 @@ elif add_selectbox == "import source - mass import":
         st.session_state.get_data = True
 
         # Process to get the list of files when selecting the folder
-        file_list, file_name = import_source_processor.process_file(dir_name)
+        file_list:list[Files] = import_source_processor.process_file(dir_name)
 
-        # Read ECG properties when user selects a source
-        # ecg_property = read_property(dir_name, file_list, file_name,format_desc.lower())
+        if file_list:
+            # Display the total of sources can be found from the file path
+            st.info(f'Number of sources found: {len(file_list)}')
 
-        # Read Final ECG properties
-        # if ecg_property:
-        #     read_final_property(ecg_property, file_list,file_name)
+            list_ecg_attributes = import_source_mass_view.render_property()
+            if list_ecg_attributes:
+                # Open MongoDB connection
+                db_result = con.connect_mongodb()
+
+                # Save ECG properties
+                # Read ECG properties when user selects a source
+                import_source_mass_processor.save_ecg_property_masss(db_result, dir_name, file_list, format_desc, list_ecg_attributes)
 
 elif add_selectbox == "record set":
     load_source_list_clicked = record_set_view.load_form()

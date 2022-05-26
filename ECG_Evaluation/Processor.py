@@ -7,9 +7,13 @@ import Controllers.Helper as helper
 class Processor:
     def __init__(self):
         self.ecg_list = []
+        self.ecg = None
 
     def add(self, ecg):
         self.ecg_list.append(ecg)
+
+    def set(self, ecg):
+        self.ecg = ecg
 
     def print(self):
         for e in self.ecg_list:
@@ -36,17 +40,4 @@ class Processor:
         return file_list
 
     def get_source_property(self):
-        for e in self.ecg_list:
-            return e.get_source_property()
-    
-    # def write_channel(self, download_location, list_channel, ecg_property : ECG):
-    #         # Extract only selected channels to the folder
-    #         # Retrieve the folder temp, which has all original ECG files
-    #         folder_temp = f'{download_location}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}'
-    #         # Build the file name with folder path to let WFDB library read the ECG signals
-    #         file_name = os.path.join(folder_temp, ecg_property.file_name)
-    #         signals, fields = wfdb.rdsamp(file_name, channels=ecg_property.channel)
-    #         # Write new ECG files with only selected channels
-    #         wfdb.wrsamp(record_name=ecg_property.file_name, fs=ecg_property.sample_rate, units=[
-    #                     'mV'], sig_name=list_channel, p_signal=signals, write_dir=download_location)
-
+        return self.ecg.get_source_property()

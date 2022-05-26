@@ -89,6 +89,8 @@ CONS_DS_DATA = 'ds_data'
 CONS_DS_METADATA = 'ds_metadata'
 CONS_UNIT_MV = 'mV'
 CONS_UNIT_V = 'V'
+CONS_WFDB = 'wfdb'
+CONS_ECG = 'ecg'
 
 # Record Set
 CONS_RECORD_SET_NAME = 'record_set_name'

@@ -18,11 +18,3 @@ class ECGController(ABC):
     @abstractmethod
     def get_source_property(self):
         pass
-
-    # @abstractmethod
-    # def get_source_property_with_condition(self):
-    #     pass
-
-    # @abstractmethod
-    # def render_property(self):
-    #     pass

@@ -42,6 +42,14 @@ def get_list_existed_channels(channel, list_channel):
                 break
     return result
 
+def get_file_index(file_name, list_file:list[Files]):
+    result = None
+    for index, x in enumerate(list_file):
+        if x.file_name == file_name:
+            result = index
+            break
+    return result
+
 def create_folder(path):
     # Check whether the specified path exists or not
     isExist = os.path.exists(path)

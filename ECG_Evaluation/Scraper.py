@@ -26,12 +26,12 @@ def save_ecg_file(db, file: Files, final_ecg_property: ECG):
     output = fs.get(result)
     file_id = output._id
     db.fs.files.update(
-        {cons.ECG_ID_SHORT: file_id}, 
+        {cons.ECG_ID_SHORT: file_id},
         {cons.CONS_SET_STR: {
             cons.ECG_ID: file.ecg_id,
-            cons.FILE_ECG_FILE_NAME_EXT: file.file_name_ext, 
+            cons.FILE_ECG_FILE_NAME_EXT: file.file_name_ext,
             cons.ECG_CHANNEL: final_ecg_property.channel
-            }})
+        }})
     if file_id:
         print('file_id: ' + str(file_id))
         print('file_path: ' + file.file_path)
@@ -41,6 +41,7 @@ def save_ecg_file(db, file: Files, final_ecg_property: ECG):
 def find_by_query(ecg_col, query_type, field_name, list_item):
     query = {field_name: {query_type: list_item}}
     return ecg_col.find(query)
+
 
 def find(col):
     return col.find()
@@ -64,6 +65,7 @@ def find_with_aggregate(my_col, query_data):
         }]
     return my_col.aggregate(query)
 
+
 def retrieve_ecg_file(db, list_selected_ecg_id):
     data = find_by_query(
         db.fs.files, cons.CONS_QUERYIN_STR, cons.ECG_ID, list_selected_ecg_id)
@@ -71,9 +73,9 @@ def retrieve_ecg_file(db, list_selected_ecg_id):
     files = []
     for item in data:
         files.append(Files(
-            file_name=item[cons.ECG_FILE_NAME], 
-            file_name_ext=item[cons.FILE_ECG_FILE_NAME_EXT], 
-            output_data=fs.get(item[cons.FILE_ID_SHORT]).read(), 
-            ecg_id=item[cons.ECG_ID], 
+            file_name=item[cons.ECG_FILE_NAME],
+            file_name_ext=item[cons.FILE_ECG_FILE_NAME_EXT],
+            output_data=fs.get(item[cons.FILE_ID_SHORT]).read(),
+            ecg_id=item[cons.ECG_ID],
             channel=item[cons.ECG_CHANNEL]))
     return files
