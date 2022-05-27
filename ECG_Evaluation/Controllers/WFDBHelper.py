@@ -5,7 +5,7 @@ from Controllers.ECGModel import ECG
 import wfdb
 # import pandas as pd
 import Controllers.Constants as cons
-# import Controllers.Common as common
+import Controllers.Common as common
 import os
 from pathlib import Path
 import shutil
@@ -43,31 +43,24 @@ def get_source_property_with_condition(dir_name, file_name, channel_target):
         sample_rate=fs
     )
 
-def write_channel(final_ecg_property : ECG, file_name, dir_name):
-    list_sub_channel_folder = []
-    for idx, channel in enumerate(final_ecg_property.channel):
-        # Create folder for each channel
-        path = dir_name + '/' + channel
-        list_sub_channel_folder.append(path)
-        if os.path.exists(path):
-            shutil.rmtree(path)
-        Path(path).mkdir(parents=True, exist_ok=True)
+def write_record(final_ecg_property : ECG, path):
+    # # Define a temporary folder
+    # temp_folder = f'{common.convert_current_time_to_str()}_{file_name}'
+    # # Create folder for record
+    # path = os.path.join(dir_name,temp_folder)
+    # if os.path.exists(path):
+    #     shutil.rmtree(path)
+    # Path(path).mkdir(parents=True, exist_ok=True)
+    
+    # Generate list of units by the number of channels
+    list_units = [final_ecg_property.unit] * len(final_ecg_property.channel)
 
-        # Write channel to the folder
-        signals, fields = wfdb.rdsamp(dir_name + '/' + file_name, channels=[idx])
-        wfdb.wrsamp(record_name=channel, fs = final_ecg_property.sample_rate, units=['mV'], sig_name=[channel], p_signal=signals, write_dir=path)
-    return list_sub_channel_folder
-
-# def write_channel(self, download_location, list_channel, ecg_property : ECG):
-#         # Extract only selected channels to the folder
-#         # Retrieve the folder temp, which has all original ECG files
-#         folder_temp = f'{download_location}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}'
-#         # Build the file name with folder path to let WFDB library read the ECG signals
-#         file_name = os.path.join(folder_temp, ecg_property.file_name)
-#         signals, fields = wfdb.rdsamp(file_name, channels=ecg_property.channel)
-#         # Write new ECG files with only selected channels
-#         wfdb.wrsamp(record_name=ecg_property.file_name, fs=ecg_property.sample_rate, units=[
-#                     'mV'], sig_name=list_channel, p_signal=signals, write_dir=download_location)
+    wfdb.wrsamp(record_name=final_ecg_property.file_name,
+                fs=final_ecg_property.sample_rate,
+                units=list_units,
+                sig_name=final_ecg_property.channel,
+                p_signal=final_ecg_property.sample,
+                write_dir=path)
 
 def resampling_data(signals, fs_target, fs):
     # Flatten the array for further processing (Ex: array([[0.2735], [0.287], [0.2925], [0.312]]) --> [0.2735, 0.287,  0.2925, 0.312])

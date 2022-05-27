@@ -9,8 +9,26 @@ import os
 from Controllers.FilesModel import Files
 import numpy as np
 import Controllers.WFDBHelper as wfdb_helper
+from Processors.ImportSourceProcessor import ImportSourceProcessor
+
+import_source_processor = ImportSourceProcessor()
 
 class ImportSourceMassProcessor:
+    def unify_format_wfdb(self, ecg_property:ECG, dir_name, file_name):
+        # Define a temporary folder
+        temp_folder = f'{common.convert_current_time_to_str()}_{file_name}'
+        # Create folder for record
+        path = os.path.join(dir_name,temp_folder)
+        helper.create_folder(path)
+
+        # Write record to the temporary folder
+        wfdb_helper.write_record(ecg_property, path)
+
+        # Process to get the list of files when selecting the folder
+        file_list:list[Files] = import_source_processor.process_file(path)
+
+        return file_list
+
     def save_ecg_property_masss(self, db_result, dir_name, file_list:list[Files], format_desc, list_ecg_attributes):
         # Check source, which must be defined
         source = list_ecg_attributes[cons.ECG_SOURCE]
@@ -25,23 +43,44 @@ class ImportSourceMassProcessor:
         for ecg_record in file_list:
             # Access and read the ECG record property
             ecg_property:ECG = wfdb_helper.read_property(dir_name, ecg_record.file_path, ecg_record.file_name,format_desc.lower())
-            # Update 'sample' property by total number of samples instead of data signal before saving ECG property
-            # It can cause an error of 'the BSON document too large'
-            ecg_property.sample = len(ecg_property.sample)
-
-            # Check if the sample_rate is NOT defined, use the given sample rate from UI
-            if not ecg_property.sample_rate:
-                fs = list_ecg_attributes[cons.ECG_SAMPLE_RATE]
-                ecg_property.sample_rate = fs
-                ecg_property.time =  round(ecg_property.sample / fs)
+            
+            # Set values for source and comments from UI to import into DB
+            ecg_property.source = source
+            ecg_property.comments = list_ecg_attributes[cons.ECG_COMMENTS]
 
             # Check if the unit is NOT defined, use the given unit from UI
             if not ecg_property.unit:
                 ecg_property.unit = list_ecg_attributes[cons.ECG_UNIT]
 
-            # Set values for source and comments from UI to import into DB
-            ecg_property.source = source
-            ecg_property.comments = list_ecg_attributes[cons.ECG_COMMENTS]
+            # Check if the channel is NOT defined, use the given channel from UI
+            if not ecg_property.channel:
+                ecg_property.channel = common.convert_string_to_list(list_ecg_attributes[cons.ECG_CHANNEL], cons.CONS_SEMICOLON)
+
+            # Count length of the samples
+            length_samples = len(ecg_property.sample)
+
+            # Check if the sample_rate is NOT defined, use the given sample rate from UI
+            if not ecg_property.sample_rate:
+                fs = list_ecg_attributes[cons.ECG_SAMPLE_RATE]
+                ecg_property.sample_rate = fs
+                ecg_property.time =  round(length_samples / fs)
+
+                # Unify the format to WFDB (Ex: .mat --> .dat)
+                new_file_list = self.unify_format_wfdb(ecg_property,dir_name,ecg_record.file_name)
+                # Check the result
+                if new_file_list and len(new_file_list) == 1:
+                    # Update the new file list based on the new unified format
+                    ecg_record = new_file_list[0]
+
+                    # Update the number of file generation by the new format
+                    ecg_property.ecg = len(ecg_record.file_path)
+                else:
+                    st.error(f'Cannot unify the format for source name: {ecg_record.file_name}')
+                    continue
+
+            # Update 'sample' property by total number of samples instead of data signal before saving ECG property
+            # It can cause an error of 'the BSON document too large'
+            ecg_property.sample = length_samples
 
             # Save the ECG property to MongoDB
             ecg_id = scraper.save_ecg_property(ecg_col, ecg_property)
