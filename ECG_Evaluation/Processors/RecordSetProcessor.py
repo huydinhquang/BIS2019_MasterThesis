@@ -9,7 +9,7 @@ import Scraper as scraper
 import Scrapers.RecordSetScraper as record_set_scraper
 
 class RecordSetProcessor:
-    def load_source_data(self, db_result):
+    def load_record_data(self, db_result):
         ecg_col = db_result[cons.COLLECTION_ECG_NAME]
         record_set_col = db_result[cons.COLLECTION_RECORD_SET_NAME]
         # st.session_state.select_row = True
@@ -57,17 +57,17 @@ class RecordSetProcessor:
         st.write('### Full Dataset', df)
         st.info('Total items: ' + str(count))
 
-        # source_name, filter_source_clicked = download_channel.filter_source()
-        # if filter_source_clicked:
-        #     st.session_state.filter_source = True
+        # source_name, filter_record_clicked = download_channel.filter_record()
+        # if filter_record_clicked:
+        #     st.session_state.filter_record = True
 
-        # if st.session_state.filter_source:
+        # if st.session_state.filter_record:
         #     df = df[df['Source'].str.contains(source_name, na=False, case=False)]
         #     # st.dataframe(df)
         
         selected_indices = st.multiselect('Select rows:', df.index)
-        if selected_indices or st.session_state.load_source_list:
-            st.session_state.load_source_list = True
+        if selected_indices or st.session_state.load_record_list:
+            st.session_state.load_record_list = True
             # st.session_state.get_select_source = True
             selected_rows = df.loc[selected_indices]
             st.write('### Selected Rows', selected_rows)

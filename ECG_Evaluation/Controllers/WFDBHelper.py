@@ -1,5 +1,3 @@
-from cProfile import label
-from ECGController import ECGController
 import streamlit as st
 from Controllers.ECGModel import ECG
 import wfdb
@@ -7,30 +5,27 @@ import wfdb
 import Controllers.Constants as cons
 import Controllers.Common as common
 import os
-from pathlib import Path
-import shutil
 import numpy as np
 import matplotlib.pyplot as plt
 from Controllers.WFDBController import WFDBController
 from Controllers.SciPyController import SciPyController
 from Processor import Processor
 import Controllers.Helper as helper
-from Controllers.FilesModel import Files
 
 processor = Processor()
 
 # class WFDBHelper:
 def read_property(dir_name, file_list, file_name,format_desc):
-    # Read source ecg property    
+    # Read record ecg property    
     if format_desc == cons.CONS_WFDB:
         processor.set(WFDBController(dir_name, file_name, file_list))
     else:
         processor.set(SciPyController(dir_name, file_name, file_list))
-    return processor.get_source_property()
+    return processor.get_record_property()
 
 
-def get_source_property_with_condition(dir_name, file_name, channel_target):
-    # def get_source_property_constraint(self, signal_start, signal_end, channel_target):
+def get_record_property_with_condition(dir_name, file_name, channel_target):
+    # def get_record_property_constraint(self, signal_start, signal_end, channel_target):
     # signals, fields = wfdb.rdsamp(self.dir_name + '/' + self.file_name, sampfrom=signal_start,sampto=signal_end, channels=[channel_target])
     signals, fields = wfdb.rdsamp(os.path.join(dir_name,file_name), channels=channel_target)
     # headers = wfdb.rdheader(dir_name + '/' + file_name)

@@ -17,7 +17,7 @@ class Processor:
 
     def print(self):
         for e in self.ecg_list:
-            print(f"{e.full_name} \t ${e.get_source_property()}")
+            print(f"{e.full_name} \t ${e.get_record_property()}")
     
     def process_file(self, dir_name):
         file_list=[]
@@ -39,5 +39,5 @@ class Processor:
         file_list = [ name for name in os.listdir(dir_name) if os.path.isdir(os.path.join(dir_name, name)) and cons.CONS_TEMP_STR not in name]
         return file_list
 
-    def get_source_property(self):
-        return self.ecg.get_source_property()
+    def get_record_property(self):
+        return self.ecg.get_record_property()

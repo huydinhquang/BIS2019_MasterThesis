@@ -16,5 +16,5 @@ class ECGController(ABC):
         return datetime.now()
 
     @abstractmethod
-    def get_source_property(self):
+    def get_record_property(self):
         pass

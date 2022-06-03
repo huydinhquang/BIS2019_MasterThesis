@@ -6,17 +6,17 @@ from Controllers.ECGModel import ECG
 import Controllers.Helper as helper
 from Controllers.FilesModel import Files
 import Controllers.WFDBHelper as wfdb_helper
-from Processors.ImportSourceProcessor import ImportSourceProcessor
+from Processors.ImportRecordProcessor import ImportRecordProcessor
 
-import_source_processor = ImportSourceProcessor()
+import_record_processor = ImportRecordProcessor()
 
-class ImportSourceMassProcessor:
+class ImportRecordMassProcessor:
     def unify_format(self, ecg_property:ECG, dir_name, file_name):
         # Unify format with WFDB library and return the new folder path with new files
         path = wfdb_helper.unify_format_wfdb(ecg_property, dir_name, file_name)
 
         # Process to get the list of files when selecting the folder
-        file_list:list[Files] = import_source_processor.process_file(path)
+        file_list:list[Files] = import_record_processor.process_file(path)
 
         return file_list
 

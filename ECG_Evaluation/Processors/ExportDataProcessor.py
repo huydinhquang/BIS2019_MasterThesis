@@ -195,7 +195,7 @@ class ExportDataProcessor:
 
             # Read the ECG record by the limited channels, which are filtered by the exporting template
             # The channels are accessed by WFDB helper with channel index
-            ecg_property:ECG = wfdb_helper.get_source_property_with_condition(download_location, x.file_name, x.channel_index)
+            ecg_property:ECG = wfdb_helper.get_record_property_with_condition(download_location, x.file_name, x.channel_index)
 
             # Calculate total length of the samples
             len_total_samples = len(ecg_property.sample)

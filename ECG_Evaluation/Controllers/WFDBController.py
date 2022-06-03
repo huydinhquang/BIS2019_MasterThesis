@@ -1,19 +1,14 @@
 from ECGController import ECGController
-import streamlit as st
 from Controllers.ECGModel import ECG
 import wfdb
 import Controllers.Constants as cons
 import os
-from pathlib import Path
-import shutil
-import numpy as np
-import matplotlib.pyplot as plt
 
 class WFDBController(ECGController):
     def __init__(self, dir_name, file_name, file_list):
         super().__init__(dir_name, file_name, file_list)
 
-    def get_source_property(self):
+    def get_record_property(self):
         signals, fields = wfdb.rdsamp(os.path.join(self.dir_name,self.file_name))
         # headers = wfdb.rdheader(dir_name + '/' + file_name)
         fs = fields[cons.SAMPLING_FREQUENCY]

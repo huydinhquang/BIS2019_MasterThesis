@@ -22,7 +22,7 @@ ECG_SAMPLE = 'sample'
 ECG_ECG = 'ecg'
 ECG_FILE_NAME = 'file_name'
 ECG_TOTAL_CHANNELS = 'total_channels'
-ECG_CHANNEL_TEXT = 'is_channel_from_source'
+ECG_CHANNEL_TEXT = 'is_channel_from_record'
 ECG_UNIT = 'unit'
 ECG_COMMENTS = 'comments'
 

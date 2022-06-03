@@ -1,27 +1,13 @@
 import streamlit as st
 
 def load_form():
-    # list_channel = st.sidebar.multiselect(
-    #         'Channel(s)',
-    #         ['I', 'II', 'III',
-    #          'aVR', 'aVL', 'aVF',
-    #          'V1', 'V2', 'V3',
-    #          'V4', 'V5', 'V6',
-    #          'Vx', 'Vy', 'Vz'])
-    # source_name = st.sidebar.text_input('Source name')
-    load_source_list_clicked = st.sidebar.button('Load source list')
-    # with st.sidebar.form("my_form"):
-    #     a = st.slider('sidebar for testing', 5, 10, 9)
-    #     calculate = st.form_submit_button('Calculate')
-    # sample_rate = st.sidebar.number_input('Sample rate', min_value=0,max_value=10000,value=1000)
-    # export_unit = st.sidebar.number_input('Export unit', min_value=0, max_value=10000, value=10)
-    # return list_channel, sample_rate, export_unit, filter_source
-    return load_source_list_clicked
+    load_record_list_clicked = st.sidebar.button('Load record list')
+    return load_record_list_clicked
 
-def filter_source():
+def filter_record():
     source_name = st.text_input('Source name')
-    filter_source_clicked = st.button('Filter source')
-    return source_name, filter_source_clicked
+    filter_record_clicked = st.button('Filter source')
+    return source_name, filter_record_clicked
 
 def record_set():
     st.write('### Record set creation')

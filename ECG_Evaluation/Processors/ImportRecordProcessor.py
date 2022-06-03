@@ -6,10 +6,10 @@ from Controllers.ECGModel import ECG
 import Controllers.Helper as helper
 import os
 from Controllers.FilesModel import Files
-import Views.ImportSourceView as import_source_view
+import Views.ImportRecordView as import_record_view
 import Controllers.WFDBHelper as wfdb_helper
 
-class ImportSourceProcessor:
+class ImportRecordProcessor:
     def process_file(self, dir_name):
         file_list=[]
         for root, dirs, files in os.walk(dir_name):
@@ -50,7 +50,7 @@ class ImportSourceProcessor:
         #    cons.ECG_TIME: time,
         #    cons.ECG_TOTAL_CHANNELS: total_channels
         #   }
-        result = import_source_view.render_property(ecg_property, total_channels)
+        result = import_record_view.render_property(ecg_property, total_channels)
 
         # Count number of channels when missing recording metadata
         # User will enter the channel manually (Ex: I;II;III)

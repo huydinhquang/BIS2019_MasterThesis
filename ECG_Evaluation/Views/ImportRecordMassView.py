@@ -14,7 +14,7 @@ def load_form():
 
 def render_property():
     result = None
-    with st.form("import_source_mass_form"):
+    with st.form("import_record_mass_form"):
         mass_import_guideline = '<p style="font-family:Source Sans Pro, sans-serif; color:orange; font-size: 15px;">Please note that \'Mass Import\' will use the following attributes for all records if any of them is missing.</p>'
         st.markdown(mass_import_guideline, unsafe_allow_html=True)
         source = st.text_input('Source')

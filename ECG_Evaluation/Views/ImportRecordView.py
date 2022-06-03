@@ -21,10 +21,10 @@ def render_property(ecg_property : ECG, total_channels):
         # Channels
         if ecg_property.channel:
             channel = st.multiselect('Channel(s)',ecg_property.channel,ecg_property.channel)
-            is_channel_from_source = True
+            is_channel_from_record = True
         else:
             channel = st.text_input(label='Channel(s)')
-            is_channel_from_source = False
+            is_channel_from_record = False
             channel_guideline = '<p style="font-family:Source Sans Pro, sans-serif; color:orange; font-size: 15px;">Each channels is separated by a semicolon. Ex: I;II;III</p>'
             st.markdown(channel_guideline, unsafe_allow_html=True)
 
@@ -60,7 +60,7 @@ def render_property(ecg_property : ECG, total_channels):
     result = {
         cons.ECG_SOURCE: source,
         cons.ECG_CHANNEL: channel,
-        cons.ECG_CHANNEL_TEXT: is_channel_from_source,
+        cons.ECG_CHANNEL_TEXT: is_channel_from_record,
         cons.ECG_SAMPLE_RATE: sample_rate,
         cons.ECG_TIME: time,
         cons.ECG_TOTAL_CHANNELS: total_channels,
