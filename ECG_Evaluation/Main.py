@@ -42,7 +42,7 @@ import_source_processor = ImportSourceProcessor()
 import_source_mass_processor = ImportSourceMassProcessor()
 
 
-def read_final_property(ecg_property, file_path, file_name_ext, file_name):
+def read_final_property(ecg_property, dir_name, file_path, file_name_ext, file_name):
     # Get final ecg property
     final_ecg_property = import_source_processor.render_property(ecg_property)
 
@@ -53,7 +53,7 @@ def read_final_property(ecg_property, file_path, file_name_ext, file_name):
             db_result = con.connect_mongodb()
 
             # Save ECG properties
-            import_source_processor.save_ecg_property(db_result, file_path, file_name_ext, file_name,final_ecg_property)
+            import_source_processor.save_ecg_property(db_result, dir_name, file_path, file_name_ext, file_name,final_ecg_property)
 
 add_selectbox = st.sidebar.selectbox(
     "Task",
@@ -78,9 +78,8 @@ if add_selectbox == "import source":
 
                 # Read Final ECG properties
                 if ecg_property:
-                    read_final_property(ecg_property, ecg_record.file_path, ecg_record.file_name_ext, ecg_record.file_name)
+                    read_final_property(ecg_property, dir_name, ecg_record.file_path, ecg_record.file_name_ext, ecg_record.file_name)
             
-
     # new_channel, add_clicked, load_list_clicked = manage_channel_view.load_form()
 
     # if load_list_clicked:
@@ -119,7 +118,7 @@ elif add_selectbox == "import source - mass import":
 
                 # Save ECG properties
                 # Read ECG properties when user selects a source
-                import_source_mass_processor.save_ecg_property_masss(db_result, dir_name, file_list, format_desc, list_ecg_attributes)
+                import_source_mass_processor.save_ecg_property_mass(db_result, dir_name, file_list, format_desc, list_ecg_attributes)
 
 elif add_selectbox == "record set":
     load_source_list_clicked = record_set_view.load_form()

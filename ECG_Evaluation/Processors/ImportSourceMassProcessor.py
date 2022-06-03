@@ -1,35 +1,26 @@
 import streamlit as st
 import Controllers.Constants as cons
 import Controllers.Common as common
-import Controllers.Helper as helper
 import Scraper as scraper
 from Controllers.ECGModel import ECG
 import Controllers.Helper as helper
-import os
 from Controllers.FilesModel import Files
-import numpy as np
 import Controllers.WFDBHelper as wfdb_helper
 from Processors.ImportSourceProcessor import ImportSourceProcessor
 
 import_source_processor = ImportSourceProcessor()
 
 class ImportSourceMassProcessor:
-    def unify_format_wfdb(self, ecg_property:ECG, dir_name, file_name):
-        # Define a temporary folder
-        temp_folder = f'{common.convert_current_time_to_str()}_{file_name}'
-        # Create folder for record
-        path = os.path.join(dir_name,temp_folder)
-        helper.create_folder(path)
-
-        # Write record to the temporary folder
-        wfdb_helper.write_record(ecg_property, path)
+    def unify_format(self, ecg_property:ECG, dir_name, file_name):
+        # Unify format with WFDB library and return the new folder path with new files
+        path = wfdb_helper.unify_format_wfdb(ecg_property, dir_name, file_name)
 
         # Process to get the list of files when selecting the folder
         file_list:list[Files] = import_source_processor.process_file(path)
 
         return file_list
 
-    def save_ecg_property_masss(self, db_result, dir_name, file_list:list[Files], format_desc, list_ecg_attributes):
+    def save_ecg_property_mass(self, db_result, dir_name, file_list:list[Files], format_desc, list_ecg_attributes):
         # Check source, which must be defined
         source = list_ecg_attributes[cons.ECG_SOURCE]
         if not source:
@@ -66,7 +57,7 @@ class ImportSourceMassProcessor:
                 ecg_property.time =  round(length_samples / fs)
 
                 # Unify the format to WFDB (Ex: .mat --> .dat)
-                new_file_list = self.unify_format_wfdb(ecg_property,dir_name,ecg_record.file_name)
+                new_file_list = self.unify_format(ecg_property,dir_name,ecg_record.file_name)
                 # Check the result
                 if new_file_list and len(new_file_list) == 1:
                     # Update the new file list based on the new unified format
@@ -87,10 +78,9 @@ class ImportSourceMassProcessor:
             if ecg_id:
                 list_file_id = []
                 for index, item in enumerate(ecg_record.file_path):
-                    file_path = item
                     file_name_ext= ecg_record.file_name_ext[index]
                     file_metadata = Files(
-                        file_path=file_path,
+                        file_path=item,
                         file_name_ext=file_name_ext,
                         file_name=ecg_record.file_name, 
                         ecg_id=ecg_id

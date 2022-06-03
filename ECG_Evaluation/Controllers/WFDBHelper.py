@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 from Controllers.WFDBController import WFDBController
 from Controllers.SciPyController import SciPyController
 from Processor import Processor
+import Controllers.Helper as helper
+from Controllers.FilesModel import Files
 
 processor = Processor()
 
@@ -60,7 +62,8 @@ def write_record(final_ecg_property : ECG, path):
                 units=list_units,
                 sig_name=final_ecg_property.channel,
                 p_signal=final_ecg_property.sample,
-                write_dir=path)
+                write_dir=path,
+                comments=[final_ecg_property.comments])
 
 def resampling_data(signals, fs_target, fs):
     # Flatten the array for further processing (Ex: array([[0.2735], [0.287], [0.2925], [0.312]]) --> [0.2735, 0.287,  0.2925, 0.312])
@@ -122,3 +125,15 @@ def visualize_chart(file_name, channel_name, signal, fs, resampled_signal, fs_ta
     fig.tight_layout()
     
     st.pyplot(plt)
+
+def unify_format_wfdb(ecg_property:ECG, dir_name, file_name):
+    # Define a temporary folder
+    temp_folder = f'{common.convert_current_time_to_str()}_{file_name}'
+    # Create folder for record
+    path = os.path.join(dir_name,temp_folder)
+    helper.create_folder(path)
+
+    # Write record to the temporary folder
+    write_record(ecg_property, path)
+
+    return path
