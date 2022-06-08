@@ -16,20 +16,20 @@ def render_property(ecg_property : ECG, total_channels):
     col1, col2 = st.columns(2)
     with col1:
         # File name
-        source = st.text_input('Source name', ecg_property.file_name)
+        source = st.text_input(cons.CONS_SOURCE_NAME, ecg_property.file_name)
 
         # Channels
         if ecg_property.channel:
-            channel = st.multiselect('Channel(s)',ecg_property.channel,ecg_property.channel)
+            channel = st.multiselect(cons.CONS_CHANNELS,ecg_property.channel,ecg_property.channel)
             is_channel_from_record = True
         else:
-            channel = st.text_input(label='Channel(s)')
+            channel = st.text_input(label=cons.CONS_CHANNELS)
             is_channel_from_record = False
             channel_guideline = '<p style="font-family:Source Sans Pro, sans-serif; color:orange; font-size: 15px;">Each channels is separated by a semicolon. Ex: I;II;III</p>'
             st.markdown(channel_guideline, unsafe_allow_html=True)
 
         # Total channels
-        total_channels = st.text(f'Total channels: {str(total_channels)}')
+        total_channels = st.text(f'{cons.CONS_TOTAL_CHANNELS}: {str(total_channels)}')
     with col2:
         # sample_rate = st.slider('Sample rate', 0, 10000,
         #                        ecg_property.sample_rate)
@@ -37,25 +37,25 @@ def render_property(ecg_property : ECG, total_channels):
         # Sample rate
         if ecg_property.sample_rate:
             sample_rate = ecg_property.sample_rate
-            st.text(f'Sample rate: {str(sample_rate)}')
+            st.text(f'{cons.CONS_SAMPLE_RATE}: {str(sample_rate)}')
         else:
-            sample_rate = st.number_input('Sample rate',min_value=1,step=1)
+            sample_rate = st.number_input(cons.CONS_SAMPLE_RATE,min_value=1,step=1)
 
         # Time
         if ecg_property.time:
             time = ecg_property.time
-            st.text(f'Time(s): {str(time)}')
+            st.text(f'{cons.CONS_TIMES}: {str(time)}')
         else:
-            time = st.number_input('Time(s)',min_value=1,step=1)
+            time = st.number_input(cons.CONS_TIMES,min_value=1,step=1)
         
         # Sample
-        st.text(f'Samples: {str(len(ecg_property.sample))}')
+        st.text(f'{cons.CONS_SAMPLES}: {str(len(ecg_property.sample))}')
 
         # Amplitude Unit
-        unit = st.selectbox('Unit', options=ecg_property.unit)
+        unit = st.selectbox(cons.CONS_UNIT, options=ecg_property.unit)
 
-        # Description
-        comments = st.text_area('Comments', 'Add any comments here', height=120)
+        # Comments
+        comments = st.text_area(cons.CONS_COMMENTS, cons.CONS_ADD_COMMENTS, height=120)
 
     result = {
         cons.ECG_SOURCE: source,

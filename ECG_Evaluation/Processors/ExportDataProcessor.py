@@ -166,7 +166,7 @@ class ExportDataProcessor:
         # Loop record in selected RecordSet
         for x in ecg_data:
             selected_channel = st.session_state[x.id]
-            list_channels_index = helper.get_list_channels_index(selected_channel, x.channel)
+            list_channels_index = helper.get_list_index(selected_channel, x.channel)
             x.channel_index=list_channels_index
 
         list_selected_ecg_id = [x.id for x in ecg_data]

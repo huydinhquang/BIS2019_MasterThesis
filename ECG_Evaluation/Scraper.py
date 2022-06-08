@@ -79,3 +79,11 @@ def retrieve_ecg_file(db, list_selected_ecg_id):
             ecg_id=item[cons.ECG_ID],
             channel=item[cons.ECG_CHANNEL]))
     return files
+
+def update_item(ecg_col, field_name, item_id, list_new_values: ECG):
+    jsonecg_propertyStr = common.parse_json(list_new_values.__dict__)
+    query = {field_name: item_id}
+    new_values = { cons.CONS_SET_STR: { jsonecg_propertyStr } }
+
+    x = ecg_col.update_one(query, new_values)
+    return x.modified_count

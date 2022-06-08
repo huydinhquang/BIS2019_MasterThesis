@@ -6,15 +6,13 @@ import Views.ImportRecordView as import_record_view
 import Views.ImportRecordMassView as import_record_mass_view
 import Views.RecordSetView as record_set_view
 import Views.ExportDataView as export_data_view
+import Views.ManageRecordView as manage_record_view
 import Controllers.MongoDBConnection as con
 import Scrapers.TemplateExportationScraper as template_export_scraper
-# from Controllers.WFDBController import WFDBController
-# from Controllers.SciPyController import SciPyController
-# from Processor import Processor
-from Processors.ManageChannelProcessor import ManageChannelProcessor
 from Processors.RecordSetProcessor import RecordSetProcessor
 from Processors.ImportRecordProcessor import ImportRecordProcessor
 from Processors.ImportRecordMassProcessor import ImportRecordMassProcessor
+from Processors.ManageData.ManageRecordProcessor import ManageRecordProcessor
 import Controllers.Constants as cons
 import Controllers.WFDBHelper as wfdb_helper
 
@@ -31,15 +29,14 @@ if 'filter_record' not in st.session_state:
 	st.session_state.filter_record = False
 if 'load_channel_list' not in st.session_state:
 	st.session_state.load_channel_list = False
-if 'generate_channel' not in st.session_state:
-	st.session_state.generate_channel = False
+if 'manage_record' not in st.session_state:
+	st.session_state.manage_record = False
 
-# processor = Processor()
-manage_channel_processor = ManageChannelProcessor()
 record_set_processor = RecordSetProcessor()
 export_data_processor = ExportDataProcessor()
 import_record_processor = ImportRecordProcessor()
 import_record_mass_processor = ImportRecordMassProcessor()
+manage_record_processor = ManageRecordProcessor()
 
 
 def read_final_property(ecg_property, dir_name, file_path, file_name_ext, file_name):
@@ -55,13 +52,13 @@ def read_final_property(ecg_property, dir_name, file_path, file_name_ext, file_n
             # Save ECG properties
             import_record_processor.save_ecg_property(db_result, dir_name, file_path, file_name_ext, file_name,final_ecg_property)
 
-add_selectbox = st.sidebar.selectbox(
+main_selectbox = st.sidebar.selectbox(
     "Task",
-    ("Home page", "Import Record", "Import Record - Mass Import", "Record Set", "Exporting Template", "Export Data")
+    ("Home page", "Import Record", "Import Record - Mass Import", "Record Set", "Exporting Template", "Export Data", "Manage Data")
 )
 
-add_selectbox = add_selectbox.lower()
-if add_selectbox == "import record":
+main_selectbox = main_selectbox.lower()
+if main_selectbox == "import record":
     dir_name, format_desc, retrieve_clicked = import_record_view.load_form()
     if retrieve_clicked or st.session_state.get_data:
         st.session_state.get_data = True
@@ -79,27 +76,8 @@ if add_selectbox == "import record":
                 # Read Final ECG properties
                 if ecg_property:
                     read_final_property(ecg_property, dir_name, ecg_record.file_path, ecg_record.file_name_ext, ecg_record.file_name)
-            
-    # new_channel, add_clicked, load_list_clicked = manage_channel_view.load_form()
-
-    # if load_list_clicked:
-    #     # Open MongoDB connection
-    #     my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
-
-    #     # Load all channels
-    #     manage_channel_processor.load_list_channel(channel_col)
-    
-    # if add_clicked:
-    #     # Open MongoDB connection
-    #     my_db, my_main_col, channel_col, record_set_col = con.connect_mongodb()
-
-    #     channel_id = manage_channel_scraper.add_channel(channel_col, new_channel)
-    #     if channel_id:
-    #         st.success('Added successfully!')
-    #     else:
-    #         st.warning('Please try again!')
-
-elif add_selectbox == "import record - mass import":
+        
+elif main_selectbox == "import record - mass import":
     dir_name, format_desc, retrieve_clicked = import_record_mass_view.load_form()
     if retrieve_clicked or st.session_state.get_data:
         st.session_state.get_data = True
@@ -120,7 +98,7 @@ elif add_selectbox == "import record - mass import":
                 # Read ECG properties when user selects a record
                 import_record_mass_processor.save_ecg_property_mass(db_result, dir_name, file_list, format_desc, list_ecg_attributes)
 
-elif add_selectbox == "record set":
+elif main_selectbox == "record set":
     load_record_list_clicked = record_set_view.load_form()
     if load_record_list_clicked or st.session_state.load_record_list:
         st.session_state.load_record_list = True
@@ -134,7 +112,7 @@ elif add_selectbox == "record set":
         if record_set_id:
             st.success('Added successfully!')
 
-elif add_selectbox == "exporting template":
+elif main_selectbox == "exporting template":
     form_result = template_export_view.load_form()
 
     # Retrieve data from the view
@@ -151,7 +129,7 @@ elif add_selectbox == "exporting template":
         else:
             st.warning('Please try again!')
 
-elif add_selectbox == "export data":
+elif main_selectbox == "export data":
     load_data_clicked = export_data_view.load_form()
     if load_data_clicked or st.session_state.extract_anno:
         st.session_state.extract_anno = True
@@ -161,3 +139,21 @@ elif add_selectbox == "export data":
 
         # Load result after list channels selection
         record_set_id = export_data_processor.load_data(db_result)
+
+elif main_selectbox == "manage data":
+    manage_data_selectbox = st.sidebar.selectbox(
+        "Manage Data",
+        ("Record", "Record Set", "Exporting Template")
+    )
+
+    manage_data_selectbox = manage_data_selectbox.lower()
+    if manage_data_selectbox == "record":
+        load_data_clicked = manage_record_view.load_form()
+        if load_data_clicked or st.session_state.manage_record:
+            st.session_state.manage_record = True
+            
+            # Open MongoDB connection
+            db_result = con.connect_mongodb()
+
+            # Load all records, which are imported into DB
+            record_id = manage_record_processor.load_record_data(db_result)

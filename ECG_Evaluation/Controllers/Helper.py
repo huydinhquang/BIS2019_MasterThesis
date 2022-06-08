@@ -23,10 +23,15 @@ def write_file(download_location, file_name, output_data):
     output.write(output_data)
     output.close()
 
-def get_list_channels_index(channel, list_channel):
+def get_item_index(name, list_name):
+    for index, y in enumerate(list_name):
+        if name == y:
+            return index
+
+def get_list_index(name, list_name):
     result = []
-    for x in channel:
-        for index, y in enumerate(list_channel):
+    for x in name:
+        for index, y in enumerate(list_name):
             if x == y:
                 result.append(index)
                 break

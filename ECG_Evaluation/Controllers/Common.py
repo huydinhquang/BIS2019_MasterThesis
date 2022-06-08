@@ -15,7 +15,7 @@ def render_text_error(text):
     st.markdown(f'<p style="color:red;">{text}</p>', unsafe_allow_html=True)
 
 def convert_list_to_string(list):
-    return ', '.join(str(item) for item in list)
+    return '; '.join(str(item) for item in list)
 
 def convert_timestamp_to_datetime(value):
     time_stamp_value = value[cons.CONS_DATE_STR]

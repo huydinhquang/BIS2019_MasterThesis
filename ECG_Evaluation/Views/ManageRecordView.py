@@ -7,7 +7,6 @@ config = Configure()
 configure = config.get_configure_value()
 
 def load_form():
-    new_channel = st.text_input(label='Channel name')
-    add_clicked = st.button('Add')
-    load_list_clicked = st.sidebar.button('Load list channels')
-    return new_channel, add_clicked, load_list_clicked
+    # new_channel = st.text_input(label='Record name')
+    load_data_clicked = st.sidebar.button('Load data')
+    return load_data_clicked
