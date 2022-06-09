@@ -1,12 +1,5 @@
-
-from bson.objectid import ObjectId
-import gridfs
-import Controllers.ECGModel as ecg_model
 import Controllers.Common as common
 import Controllers.Constants as cons
-from Controllers.FilesModel import Files
-from Controllers.ECGModel import ECG
-from datetime import datetime
 
 def add_template(my_col, values):
     exp_tem_name = values[cons.CONS_EXPORTING_TEMPLATE_NAME]
@@ -14,7 +7,7 @@ def add_template(my_col, values):
     target_sample_rate = values[cons.CONS_TARGET_SAMPLE_RATE]
     duration = values[cons.CONS_DURATION]
 
-    current_date = datetime.now()
+    current_date = common.get_current_date()
     new_template_json = {
         cons.CONS_EXPORTING_TEMPLATE_NAME: exp_tem_name,
         cons.CONS_CHANNEL: list_channel,

@@ -31,6 +31,8 @@ if 'load_channel_list' not in st.session_state:
 	st.session_state.load_channel_list = False
 if 'manage_record' not in st.session_state:
 	st.session_state.manage_record = False
+if 'edit_record' not in st.session_state:
+	st.session_state.edit_record = False
 
 record_set_processor = RecordSetProcessor()
 export_data_processor = ExportDataProcessor()

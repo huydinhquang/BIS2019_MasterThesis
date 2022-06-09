@@ -28,8 +28,7 @@ def convert_time_to_datetime(value):
     return timestamp_formatted
 
 def convert_current_time_to_str():
-    now = dt.datetime.now()
-    datetime_str = now.strftime("%Y%m%d_%H%M%S")
+    datetime_str = get_current_date().strftime("%Y%m%d_%H%M%S")
     return datetime_str
 
 def convert_string_to_list(string, separator, hasSpacebar = False):
@@ -38,6 +37,8 @@ def convert_string_to_list(string, separator, hasSpacebar = False):
     else:    
         return list(string.split(f'{separator}'))
 
+def get_current_date():
+    return dt.datetime.now()
 
 # def my_handler(x):
 #     # st.write(x)

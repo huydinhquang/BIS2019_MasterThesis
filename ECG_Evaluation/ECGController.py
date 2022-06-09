@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
+import Controllers.Common as common
 
 class ECGController(ABC):
     def __init__(self, dir_name, file_name, file_list):
@@ -13,7 +13,7 @@ class ECGController(ABC):
 
     @property
     def current_date(self):
-        return datetime.now()
+        return common.get_current_date()
 
     @abstractmethod
     def get_record_property(self):

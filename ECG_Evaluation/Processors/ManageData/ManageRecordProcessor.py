@@ -80,7 +80,8 @@ class ManageRecordProcessor:
             with col2:
                 delete_clicked = st.button("Delete")
                 
-            if edit_clicked:
+            if edit_clicked or st.session_state.edit_record:
+                st.session_state.edit_record = True
                 if number_selected_rows == 1:
                     self.edit_record(ecg_col, selected_rows)
                 else:
@@ -128,6 +129,12 @@ class ManageRecordProcessor:
                 else:
                     comments = st.text_area(cons.CONS_COMMENTS, value=cons.CONS_ADD_COMMENTS, height=120)
 
+                # Time
+                time = row[cons.HEADER_TIME]
+
+                # Recalucate the number of samples based on the new sample rates
+                samples = sample_rate * time
+
             save_clicked = st.form_submit_button("Save")
             if save_clicked:
                 channel_list = common.convert_string_to_list(channel, cons.CONS_SEMICOLON, True)
@@ -137,6 +144,14 @@ class ManageRecordProcessor:
                     channel=channel_list,
                     sample_rate=sample_rate,
                     unit=unit,
-                    comments=comments
+                    comments=comments,
+                    sample=samples,
+                    time=time,
+                    ecg=row[cons.HEADER_ECG],
+                    created_date=row[cons.HEADER_CREATED_DATE],
+                    modified_date=common.get_current_date()
                 )
-                scraper.update_item(ecg_col, cons.FILE_ID_SHORT, record_id, new_record_value)
+                result = scraper.update_item(ecg_col, cons.FILE_ID_SHORT, record_id, new_record_value)
+                if result > 0:
+                    st.success('Save successfully! Please refresh the result.')
+
