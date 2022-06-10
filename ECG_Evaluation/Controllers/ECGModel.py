@@ -1,18 +1,20 @@
 class ECG():
-    def __init__(self, source=None, file_name=None, channel=None, sample=None, time=None, sample_rate=None, unit=None, comments=None, ecg=None, created_date=None, modified_date=None, id=None,channel_index=None):
+    def __init__(self, source=None, file_name=None, channel=None, sample=None, time=None, sample_rate=None, unit=None, comments=None, ecg=None, created_date=None, modified_date=None, id=None,channel_index=None, is_update=None):
         self.source = source
         self.file_name = file_name
         self.channel = channel
         self.sample = sample
-        self.time = time
         self.sample_rate = sample_rate
         self.unit = unit
         self.comments = comments
-        self.ecg = ecg
-        self.created_date = created_date
         self.modified_date = modified_date
-        self.id = id
-        self.channel_index = channel_index
+
+        if not is_update:
+            self.time = time
+            self.ecg = ecg
+            self.created_date = created_date
+            self.id = id
+            self.channel_index = channel_index
 
     # getting the values
     @property

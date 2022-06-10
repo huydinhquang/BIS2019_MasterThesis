@@ -9,7 +9,7 @@ from Controllers.ECGModel import ECG
 from datetime import datetime
 
 def add_record_set(my_col, record_set_name, list_source):
-    current_date = datetime.now()
+    current_date = common.get_current_date()
     new_record_set_json = {
         cons.CONS_RECORD_SET_NAME: record_set_name,
         cons.ECG_SOURCE: list_source,

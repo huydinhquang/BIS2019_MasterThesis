@@ -28,6 +28,4 @@ class WFDBController(ECGController):
             time=time,
             sample_rate=fs,
             ecg=len(self.file_list), # Total number of ECG files
-            created_date=self.current_date,
-            modified_date=self.current_date
         )

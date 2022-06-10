@@ -29,8 +29,8 @@ class RecordSetProcessor:
                 unit=record[cons.ECG_UNIT],
                 comments=record[cons.ECG_COMMENTS],
                 ecg=record[cons.ECG_ECG],
-                created_date=common.convert_timestamp_to_datetime(record[cons.ECG_CREATED_DATE]),
-                modified_date=common.convert_timestamp_to_datetime(record[cons.ECG_MODIFIED_DATE]),
+                created_date=common.convert_time_to_datetime(record[cons.ECG_CREATED_DATE]),
+                modified_date=common.convert_time_to_datetime(record[cons.ECG_MODIFIED_DATE]),
                 id=str(record[cons.ECG_ID_SHORT]),
                 channel_index=None
             ))
@@ -47,11 +47,29 @@ class RecordSetProcessor:
             cons.HEADER_ECG,
             cons.HEADER_CREATED_DATE,
             cons.HEADER_MODIFIED_DATE,
-            cons.HEADER_ID,
-            cons.HEADER_CHANNEL_INDEX
+            cons.HEADER_ID
         ]
 
+        column_names = [
+            cons.ECG_SOURCE,
+            cons.ECG_FILE_NAME,
+            cons.ECG_CHANNEL,
+            cons.ECG_SAMPLE,
+            cons.ECG_TIME,
+            cons.ECG_SAMPLE_RATE,
+            cons.ECG_UNIT,
+            cons.ECG_COMMENTS,
+            cons.ECG_ECG,
+            cons.ECG_CREATED_DATE,
+            cons.ECG_MODIFIED_DATE,
+            cons.ECG_ID
+        ]
+
+        # Generate data from list ECG records to table of DataFrame
         df = pd.DataFrame.from_records([vars(s) for s in list_ecg])
+        # Reorder columns of the DataFrame
+        df = df.reindex(columns=column_names)
+        # Set header names
         df.columns = header_table
 
         st.write('### Full Dataset', df)

@@ -25,6 +25,8 @@ ECG_TOTAL_CHANNELS = 'total_channels'
 ECG_CHANNEL_TEXT = 'is_channel_from_record'
 ECG_UNIT = 'unit'
 ECG_COMMENTS = 'comments'
+ECG_ID = 'id'
+ECG_CHANNEL_INDEX = 'channel_index'
 
 SINGAL_NAME = 'sig_name'
 SAMPLING_FREQUENCY = 'fs'
@@ -37,12 +39,10 @@ CONS_SET_STR = '$set'
 CONS_QUERYIN_STR = '$in'
 CONS_QUERYREGEX_STR = '$regex'
 
-# ECG collection column name
-ECG_ID = 'ecg_id'
-
 # Files collection column name
 FILE_ID_SHORT = '_id'
 FILE_ECG_FILE_NAME_EXT = 'file_name_ext'
+FILE_ECG_ID = 'ecg_id'
 
 # ECG Column Header
 HEADER_SOURCE = 'Source'
@@ -101,6 +101,7 @@ CONS_SAMPLES = 'Samples'
 CONS_CHANNELS = 'Channel(s)'
 CONS_TIMES = 'Time(s)'
 CONS_TOTAL_CHANNELS = 'Total channels'
+CONS_IS_UPDATE = 'is_update'
 
 # Record Set
 CONS_RECORD_SET_NAME = 'record_set_name'

@@ -1,11 +1,12 @@
 from bson.objectid import ObjectId
+import numpy as np
 import streamlit as st
 from Controllers.ECGModel import ECG
 import pandas as pd
 import Controllers.Constants as cons
 import Controllers.Common as common
 import Scraper as scraper
-import Scrapers.RecordSetScraper as record_set_scraper
+import Scrapers.ManageRecordScraper as mange_record_scraper
 import Controllers.Helper as helper
 
 class ManageRecordProcessor:
@@ -17,6 +18,12 @@ class ManageRecordProcessor:
         list_ecg = []
         # data = scraper.find_by_query(ecg_col, cons.CONS_QUERYREGEX_STR, cons.ECG_SOURCE, source_name)
         data = scraper.find(ecg_col)
+
+        # Check if there is no imported record in the DB --> If so, return a warning message
+        if (data.count() < 1):
+            st.warning('There is no record. Please check again!')
+            st.stop()
+
         for record in data:
             count = count + 1
             list_ecg.append(ECG(
@@ -24,15 +31,14 @@ class ManageRecordProcessor:
                 file_name=record[cons.ECG_FILE_NAME],
                 channel=common.convert_list_to_string(record[cons.ECG_CHANNEL]).upper(),
                 sample=record[cons.ECG_SAMPLE],
-                time=record[cons.ECG_TIME],
                 sample_rate=record[cons.ECG_SAMPLE_RATE],
                 unit=record[cons.ECG_UNIT],
                 comments=record[cons.ECG_COMMENTS],
                 ecg=record[cons.ECG_ECG],
-                created_date=common.convert_timestamp_to_datetime(record[cons.ECG_CREATED_DATE]),
-                modified_date=common.convert_timestamp_to_datetime(record[cons.ECG_MODIFIED_DATE]),
-                id=str(record[cons.ECG_ID_SHORT]),
-                channel_index=None
+                time=record[cons.ECG_TIME],
+                created_date=common.convert_time_to_datetime(record[cons.ECG_CREATED_DATE]),
+                modified_date=common.convert_time_to_datetime(record[cons.ECG_MODIFIED_DATE]),
+                id=str(record[cons.ECG_ID_SHORT])
             ))
             
         header_table = [
@@ -47,11 +53,29 @@ class ManageRecordProcessor:
             cons.HEADER_ECG,
             cons.HEADER_CREATED_DATE,
             cons.HEADER_MODIFIED_DATE,
-            cons.HEADER_ID,
-            cons.HEADER_CHANNEL_INDEX
+            cons.HEADER_ID
         ]
 
+        column_names = [
+            cons.ECG_SOURCE,
+            cons.ECG_FILE_NAME,
+            cons.ECG_CHANNEL,
+            cons.ECG_SAMPLE,
+            cons.ECG_TIME,
+            cons.ECG_SAMPLE_RATE,
+            cons.ECG_UNIT,
+            cons.ECG_COMMENTS,
+            cons.ECG_ECG,
+            cons.ECG_CREATED_DATE,
+            cons.ECG_MODIFIED_DATE,
+            cons.ECG_ID
+        ]
+
+        # Generate data from list ECG records to table of DataFrame
         df = pd.DataFrame.from_records([vars(s) for s in list_ecg])
+        # Reorder columns of the DataFrame
+        df = df.reindex(columns=column_names)
+        # Set header names
         df.columns = header_table
 
         with st.form("extract_data_form"):
@@ -129,11 +153,8 @@ class ManageRecordProcessor:
                 else:
                     comments = st.text_area(cons.CONS_COMMENTS, value=cons.CONS_ADD_COMMENTS, height=120)
 
-                # Time
-                time = row[cons.HEADER_TIME]
-
                 # Recalucate the number of samples based on the new sample rates
-                samples = sample_rate * time
+                samples = np.ceil(sample_rate * row[cons.HEADER_SAMPLES] / row[cons.HEADER_SAMPLE_RATE])
 
             save_clicked = st.form_submit_button("Save")
             if save_clicked:
@@ -146,12 +167,10 @@ class ManageRecordProcessor:
                     unit=unit,
                     comments=comments,
                     sample=samples,
-                    time=time,
-                    ecg=row[cons.HEADER_ECG],
-                    created_date=row[cons.HEADER_CREATED_DATE],
-                    modified_date=common.get_current_date()
+                    is_update=True
                 )
-                result = scraper.update_item(ecg_col, cons.FILE_ID_SHORT, record_id, new_record_value)
+
+                result = mange_record_scraper.update_item(ecg_col, cons.FILE_ID_SHORT, record_id, new_record_value)
                 if result > 0:
                     st.success('Save successfully! Please refresh the result.')
 

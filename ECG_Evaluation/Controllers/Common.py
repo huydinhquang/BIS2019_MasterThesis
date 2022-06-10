@@ -1,8 +1,10 @@
+import pytz
 import streamlit as st
 import json
 from bson import json_util
 import bson.objectid
-import datetime as dt
+from datetime import datetime, timedelta
+from dateutil import tz
 import Controllers.Constants as cons
 
 def parse_json(data):
@@ -19,13 +21,23 @@ def convert_list_to_string(list):
 
 def convert_timestamp_to_datetime(value):
     time_stamp_value = value[cons.CONS_DATE_STR]
-    timestamp = dt.datetime.fromtimestamp(time_stamp_value/1000.0)
+    timestamp = datetime.fromtimestamp(time_stamp_value/1000.0)
     timestamp_formatted = timestamp.strftime("%d.%m.%Y %H:%M:%S")
     return timestamp_formatted
 
 def convert_time_to_datetime(value):
-    timestamp_formatted = value.strftime("%d.%m.%Y %H:%M:%S")
-    return timestamp_formatted
+    # Get local timezone
+    local_zone = tz.tzlocal()
+    
+    # Convert timezone of datetime from UTC to local
+    dt_local = value.astimezone(local_zone)
+    dt_offset = dt_local.tzinfo._std_offset.seconds
+    new_timestamp = timedelta(seconds=dt_offset)
+    local_time = value + new_timestamp
+    
+    # Format the local datetime
+    local_time_str = local_time.strftime("%d.%m.%Y %H:%M:%S")
+    return local_time_str
 
 def convert_current_time_to_str():
     datetime_str = get_current_date().strftime("%Y%m%d_%H%M%S")
@@ -38,7 +50,7 @@ def convert_string_to_list(string, separator, hasSpacebar = False):
         return list(string.split(f'{separator}'))
 
 def get_current_date():
-    return dt.datetime.now()
+    return datetime.now(tz=pytz.UTC)
 
 # def my_handler(x):
 #     # st.write(x)

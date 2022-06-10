@@ -77,13 +77,11 @@ class ImportRecordProcessor:
                 time=result[cons.ECG_TIME],
                 sample_rate=result[cons.ECG_SAMPLE_RATE],
                 ecg=ecg_property.ecg,
-                created_date=ecg_property.created_date,
-                modified_date=ecg_property.modified_date,
                 unit=result[cons.ECG_UNIT],
                 comments=result[cons.ECG_COMMENTS]
             )
 
-    def save_ecg_property(self, db_result, dir_name, list_file_path, list_file_name_ext, file_name, final_ecg_property:ECG):
+    def save_ecg_property(self, db_result, dir_name, file_name, final_ecg_property:ECG):
         db= db_result[cons.DB_NAME]
         ecg_col= db_result[cons.COLLECTION_ECG_NAME]
 
@@ -101,7 +99,8 @@ class ImportRecordProcessor:
             # Update 'sample' property by total number of samples instead of data signal before saving ECG property
             # It can cause an error of 'the BSON document too large'
             final_ecg_property.sample = len(final_ecg_property.sample)
-
+            
+            # Save ECG record to MongoDB
             ecg_id = scraper.save_ecg_property(ecg_col, final_ecg_property)
             if ecg_id:
                 list_file_id = []

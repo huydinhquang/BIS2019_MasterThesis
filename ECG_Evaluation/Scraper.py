@@ -12,6 +12,15 @@ def connect_gridfs(db):
 
 def save_ecg_property(ecg_col, ecg_property: ECG):
     jsonecg_propertyStr = common.parse_json(ecg_property.__dict__)
+    # Get current date
+    current_date = common.get_current_date()
+    # Update Created date and Modified date with the Date Type (This is used to handle the Date type in MongoDB)
+    jsonecg_propertyStr.update(
+        {
+            cons.ECG_CREATED_DATE: current_date,
+            cons.ECG_MODIFIED_DATE: current_date
+        }
+    )
     output = ecg_col.insert_one(jsonecg_propertyStr)
     if output:
         print('ecg_id: ' + str(output))
@@ -28,7 +37,7 @@ def save_ecg_file(db, file: Files, final_ecg_property: ECG):
     db.fs.files.update(
         {cons.ECG_ID_SHORT: file_id},
         {cons.CONS_SET_STR: {
-            cons.ECG_ID: file.ecg_id,
+            cons.FILE_ECG_ID: file.ecg_id,
             cons.FILE_ECG_FILE_NAME_EXT: file.file_name_ext,
             cons.ECG_CHANNEL: final_ecg_property.channel
         }})
@@ -68,7 +77,7 @@ def find_with_aggregate(my_col, query_data):
 
 def retrieve_ecg_file(db, list_selected_ecg_id):
     data = find_by_query(
-        db.fs.files, cons.CONS_QUERYIN_STR, cons.ECG_ID, list_selected_ecg_id)
+        db.fs.files, cons.CONS_QUERYIN_STR, cons.FILE_ECG_ID, list_selected_ecg_id)
     fs = connect_gridfs(db)
     files = []
     for item in data:
@@ -76,14 +85,6 @@ def retrieve_ecg_file(db, list_selected_ecg_id):
             file_name=item[cons.ECG_FILE_NAME],
             file_name_ext=item[cons.FILE_ECG_FILE_NAME_EXT],
             output_data=fs.get(item[cons.FILE_ID_SHORT]).read(),
-            ecg_id=item[cons.ECG_ID],
+            ecg_id=item[cons.FILE_ECG_ID],
             channel=item[cons.ECG_CHANNEL]))
     return files
-
-def update_item(ecg_col, field_name, item_id, list_new_values: ECG):
-    jsonecg_propertyStr = common.parse_json(list_new_values.__dict__)
-    query = {field_name: item_id}
-    new_values = { cons.CONS_SET_STR: jsonecg_propertyStr }
-
-    x = ecg_col.update_one(query, new_values)
-    return x.modified_count

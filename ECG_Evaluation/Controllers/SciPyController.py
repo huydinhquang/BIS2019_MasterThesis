@@ -14,6 +14,4 @@ class SciPyController(ECGController):
             file_name=self.file_name,
             sample=signals,
             ecg=len(self.file_list), # Total number of ECG files
-            created_date=self.current_date,
-            modified_date=self.current_date
         )

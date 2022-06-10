@@ -29,6 +29,8 @@ if 'filter_record' not in st.session_state:
 	st.session_state.filter_record = False
 if 'load_channel_list' not in st.session_state:
 	st.session_state.load_channel_list = False
+if 'generate_channel' not in st.session_state:
+	st.session_state.generate_channel = False
 if 'manage_record' not in st.session_state:
 	st.session_state.manage_record = False
 if 'edit_record' not in st.session_state:
@@ -41,7 +43,7 @@ import_record_mass_processor = ImportRecordMassProcessor()
 manage_record_processor = ManageRecordProcessor()
 
 
-def read_final_property(ecg_property, dir_name, file_path, file_name_ext, file_name):
+def read_final_property(ecg_property, dir_name, file_name):
     # Get final ecg property
     final_ecg_property = import_record_processor.render_property(ecg_property)
 
@@ -52,7 +54,7 @@ def read_final_property(ecg_property, dir_name, file_path, file_name_ext, file_n
             db_result = con.connect_mongodb()
 
             # Save ECG properties
-            import_record_processor.save_ecg_property(db_result, dir_name, file_path, file_name_ext, file_name,final_ecg_property)
+            import_record_processor.save_ecg_property(db_result, dir_name, file_name,final_ecg_property)
 
 main_selectbox = st.sidebar.selectbox(
     "Task",
@@ -77,7 +79,7 @@ if main_selectbox == "import record":
 
                 # Read Final ECG properties
                 if ecg_property:
-                    read_final_property(ecg_property, dir_name, ecg_record.file_path, ecg_record.file_name_ext, ecg_record.file_name)
+                    read_final_property(ecg_property, dir_name, ecg_record.file_name)
         
 elif main_selectbox == "import record - mass import":
     dir_name, format_desc, retrieve_clicked = import_record_mass_view.load_form()
