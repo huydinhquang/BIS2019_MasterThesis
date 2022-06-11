@@ -10,5 +10,5 @@ import Controllers.Common as common
 import Scraper as scraper
 import Scrapers.RecordSetScraper as record_set_scraper
 
-class TemplateExportationProcessor:
+class ExportingTemplateProcessor:
     st.write('test')

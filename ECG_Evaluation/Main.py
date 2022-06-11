@@ -1,7 +1,7 @@
 import streamlit as st
 from ECG_Evaluation.Controllers.FilesModel import Files
 from Processors.ExportDataProcessor import ExportDataProcessor
-import Views.TemplateExportationView as template_export_view
+import Views.ExportingTemplateView as exporting_template_view
 import Views.ImportRecordView as import_record_view
 import Views.ImportRecordMassView as import_record_mass_view
 import Views.RecordSetView as record_set_view
@@ -9,7 +9,7 @@ import Views.ExportDataView as export_data_view
 import Views.ManageData.ManageRecordView as manage_record_view
 import Views.ManageData.ManageRecordSetView as manage_record_set_view
 import Controllers.MongoDBConnection as con
-import Scrapers.TemplateExportationScraper as template_export_scraper
+import Scrapers.ExportingTemplateScraper as exporting_template_scraper
 from Processors.RecordSetProcessor import RecordSetProcessor
 from Processors.ImportRecordProcessor import ImportRecordProcessor
 from Processors.ImportRecordMassProcessor import ImportRecordMassProcessor
@@ -128,7 +128,7 @@ elif main_selectbox == "record set":
             st.success('Added successfully!')
 
 elif main_selectbox == "exporting template":
-    form_result = template_export_view.load_form()
+    form_result = exporting_template_view.load_form()
 
     # Retrieve data from the view
     create_clicked = form_result[cons.CONS_BUTTON_CREATE]
@@ -138,7 +138,7 @@ elif main_selectbox == "exporting template":
     if create_clicked and exp_tem_name and len(list_channel) > 0:
         # Open MongoDB connection
         db_result = con.connect_mongodb()
-        template_id = template_export_scraper.add_template(db_result[cons.COLLECTION_TEMPLATE_EXPORTATION_NAME], form_result)
+        template_id = exporting_template_scraper.add_template(db_result[cons.COLLECTION_TEMPLATE_EXPORTATION_NAME], form_result)
         if template_id:
             st.success('Added successfully!')
         else:
@@ -177,7 +177,7 @@ elif main_selectbox == "manage data":
         load_data_clicked = manage_record_set_view.load_form()
         if load_data_clicked or st.session_state.manage_record_set:
             st.session_state.manage_record_set = True
-            
+
             # Open MongoDB connection
             db_result = con.connect_mongodb()
 
