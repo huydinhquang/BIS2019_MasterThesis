@@ -6,13 +6,15 @@ import Views.ImportRecordView as import_record_view
 import Views.ImportRecordMassView as import_record_mass_view
 import Views.RecordSetView as record_set_view
 import Views.ExportDataView as export_data_view
-import Views.ManageRecordView as manage_record_view
+import Views.ManageData.ManageRecordView as manage_record_view
+import Views.ManageData.ManageRecordSetView as manage_record_set_view
 import Controllers.MongoDBConnection as con
 import Scrapers.TemplateExportationScraper as template_export_scraper
 from Processors.RecordSetProcessor import RecordSetProcessor
 from Processors.ImportRecordProcessor import ImportRecordProcessor
 from Processors.ImportRecordMassProcessor import ImportRecordMassProcessor
 from Processors.ManageData.ManageRecordProcessor import ManageRecordProcessor
+from Processors.ManageData.ManageRecordSetProcessor import ManageRecordSetProcessor
 import Controllers.Constants as cons
 import Controllers.WFDBHelper as wfdb_helper
 
@@ -37,12 +39,15 @@ if 'edit_record' not in st.session_state:
 	st.session_state.edit_record = False
 if 'delete_record' not in st.session_state:
 	st.session_state.delete_record = False
+if 'manage_record_set' not in st.session_state:
+	st.session_state.manage_record_set = False
 
 record_set_processor = RecordSetProcessor()
 export_data_processor = ExportDataProcessor()
 import_record_processor = ImportRecordProcessor()
 import_record_mass_processor = ImportRecordMassProcessor()
 manage_record_processor = ManageRecordProcessor()
+manage_record_set_processor = ManageRecordSetProcessor()
 
 
 def read_final_property(ecg_property, dir_name, file_name):
@@ -163,3 +168,12 @@ elif main_selectbox == "manage data":
 
             # Load all records, which are imported into DB
             record_id = manage_record_processor.load_record_data(db_result)
+
+    elif manage_data_selectbox == "record set":
+        load_data_clicked = manage_record_set_view.load_form()
+        if load_data_clicked:
+            # Open MongoDB connection
+            db_result = con.connect_mongodb()
+
+            # Load all records, which are imported into DB
+            record_id = manage_record_set_processor.load_record_data(db_result)

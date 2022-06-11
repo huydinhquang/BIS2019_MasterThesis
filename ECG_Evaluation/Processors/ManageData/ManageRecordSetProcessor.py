@@ -1,82 +1,74 @@
 from bson.objectid import ObjectId
 import numpy as np
 import streamlit as st
-from Controllers.ECGModel import ECG
+from Controllers.RecordSetModel import RecordSet
 import pandas as pd
 import Controllers.Constants as cons
 import Controllers.Common as common
 import Scraper as scraper
-import Scrapers.ManageData.ManageRecordScraper as mange_record_scraper
+import Scrapers.ManageData.ManageRecordSetScraper as manage_record_set_scraper
 import Controllers.Helper as helper
 
-class ManageRecordProcessor:
+class ManageRecordSetProcessor:
+    def load_record_list_from_record_set(self, ecg_col, record_set_col):
+        query_data = {
+            cons.CONS_QUERY_FROM : ecg_col.name,
+            cons.CONS_QUERY_LOCALFIELD: cons.ECG_SOURCE,
+            cons.CONS_QUERY_FOREIGNFIELD: cons.CONS_ID_SHORT,
+            cons.CONS_QUERY_AS: ecg_col.name,
+            #cons.CONS_ID_SHORT: record_set_id
+        }
+        result = manage_record_set_scraper.find_record_list(record_set_col, query_data)
+        return result
+
     def load_record_data(self, db_result):
         ecg_col = db_result[cons.COLLECTION_ECG_NAME]
+        record_set_col = db_result[cons.COLLECTION_RECORD_SET_NAME]
         count = 0
-        list_ecg = []
-        # data = scraper.find_by_query(ecg_col, cons.CONS_QUERYREGEX_STR, cons.ECG_SOURCE, source_name)
-        data = scraper.find(ecg_col)
+        list_record_set = []
+
+        data = self.load_record_list_from_record_set(ecg_col, record_set_col)
+        #data = scraper.find(record_set_col)
 
         # Check if there is no imported record in the DB --> If so, return a warning message
         if (data.count() < 1):
             st.warning('There is no record. Please check again!')
             st.stop()
 
-        for record in data:
+        for record_set in data:
             count = count + 1
-            list_ecg.append(ECG(
-                source=record[cons.ECG_SOURCE],
-                file_name=record[cons.ECG_FILE_NAME],
-                channel=common.convert_list_to_string(record[cons.ECG_CHANNEL]).upper(),
-                sample=record[cons.ECG_SAMPLE],
-                sample_rate=record[cons.ECG_SAMPLE_RATE],
-                unit=record[cons.ECG_UNIT],
-                comments=record[cons.ECG_COMMENTS],
-                ecg=record[cons.ECG_ECG],
-                time=record[cons.ECG_TIME],
-                created_date=common.convert_time_to_datetime(record[cons.ECG_CREATED_DATE]),
-                modified_date=common.convert_time_to_datetime(record[cons.ECG_MODIFIED_DATE]),
-                id=str(record[cons.ECG_ID_SHORT])
+            list_record_set.append(RecordSet(
+                record_set_name=record_set[cons.CONS_RECORD_SET_NAME],
+                source=record_set[cons.ECG_SOURCE],
+                created_date=common.convert_time_to_datetime(record_set[cons.ECG_CREATED_DATE]),
+                modified_date=common.convert_time_to_datetime(record_set[cons.ECG_MODIFIED_DATE]),
+                id=str(record_set[cons.ECG_ID_SHORT])
             ))
             
         header_table = [
+            cons.HEADER_RECORD_SET,
             cons.HEADER_SOURCE,
-            cons.HEADER_FILENAME,
-            cons.HEADER_CHANNEL,
-            cons.HEADER_SAMPLES,
-            cons.HEADER_TIME,
-            cons.HEADER_SAMPLE_RATE,
-            cons.HEADER_UNIT,
-            cons.HEADER_COMMENTS,
-            cons.HEADER_ECG,
             cons.HEADER_CREATED_DATE,
             cons.HEADER_MODIFIED_DATE,
             cons.HEADER_ID
         ]
 
         column_names = [
+            cons.CONS_RECORD_SET_NAME,
             cons.ECG_SOURCE,
-            cons.ECG_FILE_NAME,
-            cons.ECG_CHANNEL,
-            cons.ECG_SAMPLE,
-            cons.ECG_TIME,
-            cons.ECG_SAMPLE_RATE,
-            cons.ECG_UNIT,
-            cons.ECG_COMMENTS,
-            cons.ECG_ECG,
             cons.ECG_CREATED_DATE,
             cons.ECG_MODIFIED_DATE,
             cons.ECG_ID
         ]
 
         # Generate data from list ECG records to table of DataFrame
-        df = pd.DataFrame.from_records([vars(s) for s in list_ecg])
+        df = pd.DataFrame.from_records([vars(s) for s in list_record_set])
         # Reorder columns of the DataFrame
         df = df.reindex(columns=column_names)
         # Set header names
         df.columns = header_table
 
-        with st.form("record_data_form"):
+        with st.form("record_set_data_form"):
             st.write('### Full Dataset', df)
             st.info('Total items: ' + str(count))
 
@@ -85,7 +77,7 @@ class ManageRecordProcessor:
             # Every form must have a submit button.
             clicked = st.form_submit_button("Load record")
             if clicked:
-                st.session_state.manage_record = True
+                st.session_state.manage_record_set = True
 
             if selected_indices:
                 selected_rows = df.loc[selected_indices]
@@ -96,7 +88,7 @@ class ManageRecordProcessor:
         # Count number of selected rows
         number_selected_rows = len(selected_rows.values)
         # Only process if any item is selected
-        if st.session_state.manage_record and number_selected_rows > 0:
+        if st.session_state.manage_record_set and number_selected_rows > 0:
             col1, col2 = st.columns([.1,1])
             with col1:
                 edit_clicked = st.button("Edit")                
@@ -104,18 +96,18 @@ class ManageRecordProcessor:
             with col2:
                 delete_clicked = st.button("Delete")
                 
-            if edit_clicked or st.session_state.edit_record:
-                st.session_state.edit_record = True
-                if number_selected_rows == 1:
-                    self.edit_record(db_result, ecg_col, selected_rows)
-                else:
-                    st.warning("Please select one item to edit at the time!")
-            if delete_clicked or st.session_state.delete_record:
-                st.session_state.delete_record = True
-                st.warning("Are you sure you want to delete the record(s)?")
-                confirm_clicked = st.button("Yes")
-                if confirm_clicked:
-                    self.delete_record(db_result, ecg_col, selected_rows)
+            # if edit_clicked or st.session_state.edit_record:
+            #     st.session_state.edit_record = True
+            #     if number_selected_rows == 1:
+            #         self.edit_record(db_result, ecg_col, selected_rows)
+            #     else:
+            #         st.warning("Please select one item to edit at the time!")
+            # if delete_clicked or st.session_state.delete_record:
+            #     st.session_state.delete_record = True
+            #     st.warning("Are you sure you want to delete the record(s)?")
+            #     confirm_clicked = st.button("Yes")
+            #     if confirm_clicked:
+            #         self.delete_record(db_result, ecg_col, selected_rows)
 
     def delete_record(self, db_result, ecg_col, selected_rows):
         count = 0
@@ -174,7 +166,7 @@ class ManageRecordProcessor:
             save_clicked = st.form_submit_button("Save")
             if save_clicked:
                 channel_list = common.convert_string_to_list(channel, cons.CONS_SEMICOLON, True)
-                new_record_value = ECG(
+                new_record_value = RecordSet(
                     source=source_name,
                     channel=channel_list,
                     sample_rate=sample_rate,

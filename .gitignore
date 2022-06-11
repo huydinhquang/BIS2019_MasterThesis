@@ -5,3 +5,5 @@ ECG_Evaluation/Views/__pycache__/
 ECG_Evaluation/Processors/__pycache__/
 ECG_Evaluation/Scrapers/__pycache__/
 ECG_Evaluation/Processors/ManageData/__pycache__/
+ECG_Evaluation/Scrapers/ManageData/__pycache__/
+ECG_Evaluation/Views/ManageData/__pycache__/

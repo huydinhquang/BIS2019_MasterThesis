@@ -69,11 +69,19 @@ def find_with_aggregate(my_col, query_data):
     #         'from': 'ecg', 'localField': 'source', 'foreignField': 'source', 'as': 'ecg'
     #     }
     # }]
-    query = [
-        {
-            cons.CONS_QUERY_MATCH_QUERY: query_data[cons.CONS_QUERY_MATCH_QUERY]
-        },
-        {
-            cons.CONS_QUERY_LOOKUP_QUERY: query_data[cons.CONS_QUERY_LOOKUP_QUERY]
-        }]
+    is_match_query = query_data[cons.CONS_QUERY_MATCH_QUERY]
+    if is_match_query:
+        query = [
+            {
+                cons.CONS_QUERY_MATCH_QUERY: query_data[cons.CONS_QUERY_MATCH_QUERY]
+            },
+            {
+                cons.CONS_QUERY_LOOKUP_QUERY: query_data[cons.CONS_QUERY_LOOKUP_QUERY]
+            }]
+    # Find all, and then aggregate
+    else:
+        query = [
+            {
+                cons.CONS_QUERY_LOOKUP_QUERY: query_data[cons.CONS_QUERY_LOOKUP_QUERY]
+            }]
     return my_col.aggregate(query)
