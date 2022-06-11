@@ -152,7 +152,7 @@ class ManageExportingTemplateProcessor:
             save_clicked = st.form_submit_button("Save")
             if save_clicked:
                 new_exp_template_value = ExportingTemplate(
-                    record_set_name=exp_template_name,
+                    exporting_template_name=exp_template_name,
                     target_sample_rate=target_sample_rate,
                     duration=duration,
                     is_update=True
