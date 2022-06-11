@@ -41,6 +41,10 @@ if 'delete_record' not in st.session_state:
 	st.session_state.delete_record = False
 if 'manage_record_set' not in st.session_state:
 	st.session_state.manage_record_set = False
+if 'edit_record_set' not in st.session_state:
+	st.session_state.edit_record_set = False
+if 'delete_record_set' not in st.session_state:
+	st.session_state.delete_record_set = False
 
 record_set_processor = RecordSetProcessor()
 export_data_processor = ExportDataProcessor()
@@ -171,7 +175,9 @@ elif main_selectbox == "manage data":
 
     elif manage_data_selectbox == "record set":
         load_data_clicked = manage_record_set_view.load_form()
-        if load_data_clicked:
+        if load_data_clicked or st.session_state.manage_record_set:
+            st.session_state.manage_record_set = True
+            
             # Open MongoDB connection
             db_result = con.connect_mongodb()
 

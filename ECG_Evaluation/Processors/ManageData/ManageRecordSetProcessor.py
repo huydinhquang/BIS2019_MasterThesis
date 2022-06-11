@@ -8,6 +8,7 @@ import Controllers.Common as common
 import Scraper as scraper
 import Scrapers.ManageData.ManageRecordSetScraper as manage_record_set_scraper
 import Controllers.Helper as helper
+from Controllers.ECGModel import ECG
 
 class ManageRecordSetProcessor:
     def load_record_list_from_record_set(self, ecg_col, record_set_col):
@@ -15,11 +16,17 @@ class ManageRecordSetProcessor:
             cons.CONS_QUERY_FROM : ecg_col.name,
             cons.CONS_QUERY_LOCALFIELD: cons.ECG_SOURCE,
             cons.CONS_QUERY_FOREIGNFIELD: cons.CONS_ID_SHORT,
-            cons.CONS_QUERY_AS: ecg_col.name,
-            #cons.CONS_ID_SHORT: record_set_id
+            cons.CONS_QUERY_AS: ecg_col.name
         }
         result = manage_record_set_scraper.find_record_list(record_set_col, query_data)
         return result
+
+    def retrieve_ecg_data(self, ecg:list[ECG]):
+        ecg_list = []
+        for x in ecg:
+            ecg_list.append(f'Source: {x[cons.ECG_SOURCE]} - File name: {x[cons.ECG_FILE_NAME]}')
+        ecg_str = f'{cons.CONS_SEMICOLON} '.join(ecg_list)
+        return ecg_str
 
     def load_record_data(self, db_result):
         ecg_col = db_result[cons.COLLECTION_ECG_NAME]
@@ -28,22 +35,21 @@ class ManageRecordSetProcessor:
         list_record_set = []
 
         data = self.load_record_list_from_record_set(ecg_col, record_set_col)
-        #data = scraper.find(record_set_col)
-
-        # Check if there is no imported record in the DB --> If so, return a warning message
-        if (data.count() < 1):
-            st.warning('There is no record. Please check again!')
-            st.stop()
-
+        
         for record_set in data:
             count = count + 1
+            ecg_data = self.retrieve_ecg_data(record_set[cons.CONS_ECG])
             list_record_set.append(RecordSet(
                 record_set_name=record_set[cons.CONS_RECORD_SET_NAME],
-                source=record_set[cons.ECG_SOURCE],
+                source=ecg_data,
                 created_date=common.convert_time_to_datetime(record_set[cons.ECG_CREATED_DATE]),
                 modified_date=common.convert_time_to_datetime(record_set[cons.ECG_MODIFIED_DATE]),
                 id=str(record_set[cons.ECG_ID_SHORT])
             ))
+
+        if count < 1:
+            st.warning('There is no record set. Please check again!')
+            st.stop()
             
         header_table = [
             cons.HEADER_RECORD_SET,
@@ -96,94 +102,50 @@ class ManageRecordSetProcessor:
             with col2:
                 delete_clicked = st.button("Delete")
                 
-            # if edit_clicked or st.session_state.edit_record:
-            #     st.session_state.edit_record = True
-            #     if number_selected_rows == 1:
-            #         self.edit_record(db_result, ecg_col, selected_rows)
-            #     else:
-            #         st.warning("Please select one item to edit at the time!")
-            # if delete_clicked or st.session_state.delete_record:
-            #     st.session_state.delete_record = True
-            #     st.warning("Are you sure you want to delete the record(s)?")
-            #     confirm_clicked = st.button("Yes")
-            #     if confirm_clicked:
-            #         self.delete_record(db_result, ecg_col, selected_rows)
+            if edit_clicked or st.session_state.edit_record_set:
+                st.session_state.edit_record_set = True
+                if number_selected_rows == 1:
+                    self.edit_record(record_set_col, selected_rows)
+                else:
+                    st.warning("Please select one item to edit at the time!")
+            if delete_clicked or st.session_state.delete_record_set:
+                st.session_state.delete_record_set = True
+                st.warning("Are you sure you want to delete the record set(s)?")
+                confirm_clicked = st.button("Yes")
+                if confirm_clicked:
+                    self.delete_record(record_set_col, selected_rows)
 
-    def delete_record(self, db_result, ecg_col, selected_rows):
+    def delete_record(self, record_set_col, selected_rows):
         count = 0
-        db= db_result[cons.DB_NAME]
-        file_fs = scraper.connect_gridfs(db)
         for index, row in selected_rows.iterrows():
             # Get record id
             record_id = ObjectId(row[cons.HEADER_ID])
             # Delete ECG record
-            result_record = mange_record_scraper.delete_record(ecg_col, cons.FILE_ID_SHORT, record_id)
+            result_record = manage_record_set_scraper.delete_record_set(record_set_col, cons.FILE_ID_SHORT, record_id)
             # Check if the record is succsessfully deleted
             if result_record > 0:
-                # Delete ECG files with related data (files and chunks collections)
-                mange_record_scraper.delete_ecg_file(db, file_fs, cons.FILE_ECG_ID, record_id)
                 count = count + 1
         st.success(f'Delete successfully {count} items! Please refresh the result.')
 
-    def edit_record(self, db_result, ecg_col, selected_rows):
-        with st.form("edit_record_form"):
-            st.write('### Edit record')
+    def edit_record(self, record_set_col, selected_rows):
+        with st.form("edit_record-set_form"):
+            st.write('### Edit record set')
             for index, row in selected_rows.iterrows():
                 record_id = ObjectId(row[cons.HEADER_ID])
 
-                # Source name
-                if row[cons.HEADER_COMMENTS]:
-                    source_name = st.text_input(cons.CONS_SOURCE_NAME, value=row[cons.HEADER_SOURCE])
-                else:
-                    source_name = st.text_input(cons.CONS_SOURCE_NAME)
+                # RecordSet name
+                record_set_name = st.text_input(cons.HEADER_RECORD_SET, value=row[cons.HEADER_RECORD_SET])
                 
-                # Channels
-                channel = st.text_input(label=cons.CONS_CHANNELS, value=row[cons.HEADER_CHANNEL])
-                channel_guideline = '<p style="font-family:Source Sans Pro, sans-serif; color:orange; font-size: 15px;">Each channels is separated by a semicolon. Ex: I;II;III</p>'
-                st.markdown(channel_guideline, unsafe_allow_html=True)
-
-                # Total channels
-                total_channels = len(common.convert_string_to_list(row[cons.HEADER_CHANNEL], cons.CONS_SEMICOLON, True))
-                st.text(f'{cons.CONS_TOTAL_CHANNELS}: {str(total_channels)}')
-
-                # Sample rate
-                sample_rate = st.number_input(cons.CONS_SAMPLE_RATE,min_value=1,step=1, value=row[cons.HEADER_SAMPLE_RATE])
-
-                # Amplitude Unit
-                unit_options = [cons.CONS_UNIT_MV, cons.CONS_UNIT_V]
-                unit_index = helper.get_item_index(row[cons.HEADER_UNIT], unit_options)
-                unit = st.selectbox(cons.CONS_UNIT, options=unit_options, index=unit_index)
-
-                # Comments
-                if row[cons.HEADER_COMMENTS]:
-                    comments = st.text_area(cons.CONS_COMMENTS, value=row[cons.HEADER_COMMENTS], height=120)
-                else:
-                    comments = st.text_area(cons.CONS_COMMENTS, value=cons.CONS_ADD_COMMENTS, height=120)
-
-                # Recalucate the number of samples based on the new sample rates
-                samples = np.ceil(sample_rate * row[cons.HEADER_SAMPLES] / row[cons.HEADER_SAMPLE_RATE])
-
             save_clicked = st.form_submit_button("Save")
             if save_clicked:
-                channel_list = common.convert_string_to_list(channel, cons.CONS_SEMICOLON, True)
-                new_record_value = RecordSet(
-                    source=source_name,
-                    channel=channel_list,
-                    sample_rate=sample_rate,
-                    unit=unit,
-                    comments=comments,
-                    sample=samples,
+                new_record_set_value = RecordSet(
+                    record_set_name=record_set_name,
                     is_update=True
                 )
 
-                # Update ECG record
-                result_record = mange_record_scraper.update_record(ecg_col, cons.FILE_ID_SHORT, record_id, new_record_value)
+                # Update Record set
+                result_record = manage_record_set_scraper.update_record_set(record_set_col, cons.FILE_ID_SHORT, record_id, new_record_set_value)
                 # Check if the record is succsessfully updated
                 if result_record > 0:
-                    db= db_result[cons.DB_NAME]
-                    # Update ECG files with related data 
-                    result_file = mange_record_scraper.update_ecg_file(db, cons.FILE_ECG_ID, record_id, new_record_value)
-                    # Check if the file is succsessfully updated
-                    if result_file > 0:
-                        st.success('Save successfully! Please refresh the result.')
+                    st.success('Save successfully! Please refresh the result.')
 

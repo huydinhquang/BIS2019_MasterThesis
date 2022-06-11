@@ -6,7 +6,7 @@ import pandas as pd
 import Controllers.Constants as cons
 import Controllers.Common as common
 import Scraper as scraper
-import Scrapers.ManageData.ManageRecordScraper as mange_record_scraper
+import Scrapers.ManageData.ManageRecordScraper as manage_record_scraper
 import Controllers.Helper as helper
 
 class ManageRecordProcessor:
@@ -125,11 +125,11 @@ class ManageRecordProcessor:
             # Get record id
             record_id = ObjectId(row[cons.HEADER_ID])
             # Delete ECG record
-            result_record = mange_record_scraper.delete_record(ecg_col, cons.FILE_ID_SHORT, record_id)
+            result_record = manage_record_scraper.delete_record(ecg_col, cons.FILE_ID_SHORT, record_id)
             # Check if the record is succsessfully deleted
             if result_record > 0:
                 # Delete ECG files with related data (files and chunks collections)
-                mange_record_scraper.delete_ecg_file(db, file_fs, cons.FILE_ECG_ID, record_id)
+                manage_record_scraper.delete_ecg_file(db, file_fs, cons.FILE_ECG_ID, record_id)
                 count = count + 1
         st.success(f'Delete successfully {count} items! Please refresh the result.')
 
@@ -185,12 +185,12 @@ class ManageRecordProcessor:
                 )
 
                 # Update ECG record
-                result_record = mange_record_scraper.update_record(ecg_col, cons.FILE_ID_SHORT, record_id, new_record_value)
+                result_record = manage_record_scraper.update_record(ecg_col, cons.FILE_ID_SHORT, record_id, new_record_value)
                 # Check if the record is succsessfully updated
                 if result_record > 0:
                     db= db_result[cons.DB_NAME]
                     # Update ECG files with related data 
-                    result_file = mange_record_scraper.update_ecg_file(db, cons.FILE_ECG_ID, record_id, new_record_value)
+                    result_file = manage_record_scraper.update_ecg_file(db, cons.FILE_ECG_ID, record_id, new_record_value)
                     # Check if the file is succsessfully updated
                     if result_file > 0:
                         st.success('Save successfully! Please refresh the result.')

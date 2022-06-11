@@ -1,11 +1,13 @@
 class RecordSet():
-    def __init__(self, record_set_name=None, source=None, created_date=None, modified_date=None, id=None):
+    def __init__(self, record_set_name=None, source=None, created_date=None, modified_date=None, id=None, is_update=None):
         self.record_set_name = record_set_name
-        self.created_date = created_date
         self.modified_date = modified_date
-        self.id = id
-        self.source = source
-        
+
+        if not is_update:
+            self.created_date = created_date
+            self.id = id
+            self.source = source
+            
     # getting the values
     @property
     def value(self):
