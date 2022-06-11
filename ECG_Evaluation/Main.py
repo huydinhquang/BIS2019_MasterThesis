@@ -8,6 +8,7 @@ import Views.RecordSetView as record_set_view
 import Views.ExportDataView as export_data_view
 import Views.ManageData.ManageRecordView as manage_record_view
 import Views.ManageData.ManageRecordSetView as manage_record_set_view
+import Views.ManageData.ManageExportingTemplateView as manage_exporting_template_view
 import Controllers.MongoDBConnection as con
 import Scrapers.ExportingTemplateScraper as exporting_template_scraper
 from Processors.RecordSetProcessor import RecordSetProcessor
@@ -15,6 +16,7 @@ from Processors.ImportRecordProcessor import ImportRecordProcessor
 from Processors.ImportRecordMassProcessor import ImportRecordMassProcessor
 from Processors.ManageData.ManageRecordProcessor import ManageRecordProcessor
 from Processors.ManageData.ManageRecordSetProcessor import ManageRecordSetProcessor
+from Processors.ManageData.ManageExportingTemplateProcessor import ManageExportingTemplateProcessor
 import Controllers.Constants as cons
 import Controllers.WFDBHelper as wfdb_helper
 
@@ -45,6 +47,12 @@ if 'edit_record_set' not in st.session_state:
 	st.session_state.edit_record_set = False
 if 'delete_record_set' not in st.session_state:
 	st.session_state.delete_record_set = False
+if 'manage_exp_template' not in st.session_state:
+	st.session_state.manage_exp_template = False
+if 'edit_exp_template' not in st.session_state:
+	st.session_state.edit_exp_template = False
+if 'delete_exp_template' not in st.session_state:
+	st.session_state.delete_exp_template = False
 
 record_set_processor = RecordSetProcessor()
 export_data_processor = ExportDataProcessor()
@@ -52,7 +60,7 @@ import_record_processor = ImportRecordProcessor()
 import_record_mass_processor = ImportRecordMassProcessor()
 manage_record_processor = ManageRecordProcessor()
 manage_record_set_processor = ManageRecordSetProcessor()
-
+manage_exporting_template_processor = ManageExportingTemplateProcessor()
 
 def read_final_property(ecg_property, dir_name, file_name):
     # Get final ecg property
@@ -183,3 +191,14 @@ elif main_selectbox == "manage data":
 
             # Load all records, which are imported into DB
             record_id = manage_record_set_processor.load_record_data(db_result)
+
+    elif manage_data_selectbox == "exporting template":
+        load_data_clicked = manage_exporting_template_view.load_form()
+        if load_data_clicked or st.session_state.manage_exp_template:
+            st.session_state.manage_exp_template = True
+
+            # Open MongoDB connection
+            db_result = con.connect_mongodb()
+
+            # Load all records, which are imported into DB
+            exp_template_id = manage_exporting_template_processor.load_record_data(db_result)

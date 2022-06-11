@@ -48,7 +48,7 @@ class ManageRecordSetProcessor:
             ))
 
         if count < 1:
-            st.warning('There is no record set. Please check again!')
+            st.warning('There is no item. Please check again!')
             st.stop()
             
         header_table = [
@@ -105,7 +105,7 @@ class ManageRecordSetProcessor:
             if edit_clicked or st.session_state.edit_record_set:
                 st.session_state.edit_record_set = True
                 if number_selected_rows == 1:
-                    self.edit_record(record_set_col, selected_rows)
+                    self.edit_record_set(record_set_col, selected_rows)
                 else:
                     st.warning("Please select one item to edit at the time!")
             if delete_clicked or st.session_state.delete_record_set:
@@ -113,9 +113,9 @@ class ManageRecordSetProcessor:
                 st.warning("Are you sure you want to delete the record set(s)?")
                 confirm_clicked = st.button("Yes")
                 if confirm_clicked:
-                    self.delete_record(record_set_col, selected_rows)
+                    self.delete_record_set(record_set_col, selected_rows)
 
-    def delete_record(self, record_set_col, selected_rows):
+    def delete_record_set(self, record_set_col, selected_rows):
         count = 0
         for index, row in selected_rows.iterrows():
             # Get record id
@@ -127,8 +127,8 @@ class ManageRecordSetProcessor:
                 count = count + 1
         st.success(f'Delete successfully {count} items! Please refresh the result.')
 
-    def edit_record(self, record_set_col, selected_rows):
-        with st.form("edit_record-set_form"):
+    def edit_record_set(self, record_set_col, selected_rows):
+        with st.form("edit_record_set_form"):
             st.write('### Edit record set')
             for index, row in selected_rows.iterrows():
                 record_id = ObjectId(row[cons.HEADER_ID])

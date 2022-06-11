@@ -19,7 +19,7 @@ class ManageRecordProcessor:
 
         # Check if there is no imported record in the DB --> If so, return a warning message
         if (data.count() < 1):
-            st.warning('There is no record. Please check again!')
+            st.warning('There is no item. Please check again!')
             st.stop()
 
         for record in data:

@@ -1,14 +1,15 @@
 class ExportingTemplate():
-    def __init__(self, exporting_template_name=None, channel=None, target_sample_rate=None, duration=None, created_date=None, modified_date=None, id=None):
+    def __init__(self, exporting_template_name=None, channel=None, target_sample_rate=None, duration=None, created_date=None, modified_date=None, id=None, is_update=None):
         self.exporting_template_name = exporting_template_name
         self.channel = channel
         self.target_sample_rate = target_sample_rate
         self.duration = duration
-        self.created_date = created_date
         self.modified_date = modified_date
-        self.id = id
         
-        
+        if not is_update:
+            self.created_date = created_date
+            self.id = id
+
     # getting the values
     @property
     def value(self):
