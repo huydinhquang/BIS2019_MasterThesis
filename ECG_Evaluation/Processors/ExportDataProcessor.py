@@ -172,7 +172,7 @@ class ExportDataProcessor:
         list_selected_ecg_id = [x.id for x in ecg_data]
 
         # Search by list of ECG Id to retrieve ECG files
-        list_files:list[Files] = scraper.retrieve_ecg_file(db, list_selected_ecg_id)
+        list_files:list[Files] = export_data_scraper.retrieve_ecg_files(db, list_selected_ecg_id)
 
         # Download and store the ECG files from MongoDB to local
         # Create a folder for each file name to store all related ECG files (Ex: *.dat, *.hea, *.xyz)

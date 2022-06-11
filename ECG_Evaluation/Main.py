@@ -35,6 +35,8 @@ if 'manage_record' not in st.session_state:
 	st.session_state.manage_record = False
 if 'edit_record' not in st.session_state:
 	st.session_state.edit_record = False
+if 'delete_record' not in st.session_state:
+	st.session_state.delete_record = False
 
 record_set_processor = RecordSetProcessor()
 export_data_processor = ExportDataProcessor()

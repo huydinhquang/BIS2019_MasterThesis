@@ -95,7 +95,9 @@ class ManageRecordProcessor:
             else:
                 selected_rows = pd.DataFrame()
 
+        # Count number of selected rows
         number_selected_rows = len(selected_rows.values)
+        # Only process if any item is selected
         if st.session_state.manage_record and number_selected_rows > 0:
             col1, col2 = st.columns([.1,1])
             with col1:
@@ -107,15 +109,33 @@ class ManageRecordProcessor:
             if edit_clicked or st.session_state.edit_record:
                 st.session_state.edit_record = True
                 if number_selected_rows == 1:
-                    self.edit_record(ecg_col, selected_rows)
+                    self.edit_record(db_result, ecg_col, selected_rows)
                 else:
                     st.warning("Please select one item to edit at the time!")
-            if delete_clicked:
+            if delete_clicked or st.session_state.delete_record:
+                st.session_state.delete_record = True
                 st.warning("Are you sure you want to delete the record(s)?")
-                if st.button("Yes"):
-                    print('Deleted!')
+                confirm_clicked = st.button("Yes")
+                if confirm_clicked:
+                    self.delete_record(db_result, ecg_col, selected_rows)
 
-    def edit_record(self, ecg_col, selected_rows):
+    def delete_record(self, db_result, ecg_col, selected_rows):
+        count = 0
+        db= db_result[cons.DB_NAME]
+        file_fs = scraper.connect_gridfs(db)
+        for index, row in selected_rows.iterrows():
+            # Get record id
+            record_id = ObjectId(row[cons.HEADER_ID])
+            # Delete ECG record
+            result_record = mange_record_scraper.delete_record(ecg_col, cons.FILE_ID_SHORT, record_id)
+            # Check if the record is succsessfully deleted
+            if result_record > 0:
+                # Delete ECG files with related data (files and chunks collections)
+                mange_record_scraper.delete_ecg_file(db, file_fs, cons.FILE_ECG_ID, record_id)
+                count = count + 1
+        st.success(f'Delete successfully {count} items! Please refresh the result.')
+
+    def edit_record(self, db_result, ecg_col, selected_rows):
         with st.form("edit_record_form"):
             st.write('### Edit record')
             for index, row in selected_rows.iterrows():
@@ -127,9 +147,6 @@ class ManageRecordProcessor:
                 else:
                     source_name = st.text_input(cons.CONS_SOURCE_NAME)
                 
-                # File name
-                file_name = st.text_input(cons.CONS_FILE_NAME, row[cons.HEADER_FILENAME])
-
                 # Channels
                 channel = st.text_input(label=cons.CONS_CHANNELS, value=row[cons.HEADER_CHANNEL])
                 channel_guideline = '<p style="font-family:Source Sans Pro, sans-serif; color:orange; font-size: 15px;">Each channels is separated by a semicolon. Ex: I;II;III</p>'
@@ -161,7 +178,6 @@ class ManageRecordProcessor:
                 channel_list = common.convert_string_to_list(channel, cons.CONS_SEMICOLON, True)
                 new_record_value = ECG(
                     source=source_name,
-                    file_name=file_name,
                     channel=channel_list,
                     sample_rate=sample_rate,
                     unit=unit,
@@ -170,7 +186,14 @@ class ManageRecordProcessor:
                     is_update=True
                 )
 
-                result = mange_record_scraper.update_item(ecg_col, cons.FILE_ID_SHORT, record_id, new_record_value)
-                if result > 0:
-                    st.success('Save successfully! Please refresh the result.')
+                # Update ECG record
+                result_record = mange_record_scraper.update_record(ecg_col, cons.FILE_ID_SHORT, record_id, new_record_value)
+                # Check if the record is succsessfully updated
+                if result_record > 0:
+                    db= db_result[cons.DB_NAME]
+                    # Update ECG files with related data 
+                    result_file = mange_record_scraper.update_ecg_file(db, cons.FILE_ECG_ID, record_id, new_record_value)
+                    # Check if the file is succsessfully updated
+                    if result_file > 0:
+                        st.success('Save successfully! Please refresh the result.')
 

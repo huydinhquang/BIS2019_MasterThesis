@@ -39,17 +39,21 @@ def save_ecg_file(db, file: Files, final_ecg_property: ECG):
         {cons.CONS_SET_STR: {
             cons.FILE_ECG_ID: file.ecg_id,
             cons.FILE_ECG_FILE_NAME_EXT: file.file_name_ext,
-            cons.ECG_CHANNEL: final_ecg_property.channel
+            cons.ECG_CHANNEL: final_ecg_property.channel,
+            cons.ECG_MODIFIED_DATE: common.get_current_date()
         }})
     if file_id:
         print('file_id: ' + str(file_id))
         print('file_path: ' + file.file_path)
         return file_id
 
+def find_by_single_item(col, field_name, item):
+    query = {field_name: item}
+    return col.find(query)
 
-def find_by_query(ecg_col, query_type, field_name, list_item):
+def find_by_query(col, query_type, field_name, list_item):
     query = {field_name: {query_type: list_item}}
-    return ecg_col.find(query)
+    return col.find(query)
 
 
 def find(col):
@@ -73,18 +77,3 @@ def find_with_aggregate(my_col, query_data):
             cons.CONS_QUERY_LOOKUP_QUERY: query_data[cons.CONS_QUERY_LOOKUP_QUERY]
         }]
     return my_col.aggregate(query)
-
-
-def retrieve_ecg_file(db, list_selected_ecg_id):
-    data = find_by_query(
-        db.fs.files, cons.CONS_QUERYIN_STR, cons.FILE_ECG_ID, list_selected_ecg_id)
-    fs = connect_gridfs(db)
-    files = []
-    for item in data:
-        files.append(Files(
-            file_name=item[cons.ECG_FILE_NAME],
-            file_name_ext=item[cons.FILE_ECG_FILE_NAME_EXT],
-            output_data=fs.get(item[cons.FILE_ID_SHORT]).read(),
-            ecg_id=item[cons.FILE_ECG_ID],
-            channel=item[cons.ECG_CHANNEL]))
-    return files

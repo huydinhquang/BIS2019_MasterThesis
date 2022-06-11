@@ -1,7 +1,6 @@
 class ECG():
     def __init__(self, source=None, file_name=None, channel=None, sample=None, time=None, sample_rate=None, unit=None, comments=None, ecg=None, created_date=None, modified_date=None, id=None,channel_index=None, is_update=None):
         self.source = source
-        self.file_name = file_name
         self.channel = channel
         self.sample = sample
         self.sample_rate = sample_rate
@@ -10,6 +9,7 @@ class ECG():
         self.modified_date = modified_date
 
         if not is_update:
+            self.file_name = file_name
             self.time = time
             self.ecg = ecg
             self.created_date = created_date
