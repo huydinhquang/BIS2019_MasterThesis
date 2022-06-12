@@ -1,9 +1,6 @@
-
-import gridfs
-import Controllers.Common as common
 import Controllers.Constants as cons
 from Controllers.FilesModel import Files
-import ECG_Evaluation.Scraper as scraper
+import Scraper as scraper
 
 def find_channel_list(my_col, query_data):
     match_query = {

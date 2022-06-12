@@ -4,7 +4,7 @@ import streamlit as st
 import pandas as pd
 import Controllers.Constants as cons
 import Controllers.Common as common
-from ECG_Evaluation.Controllers.ExportingTemplateModel import ExportingTemplate
+from Controllers.ExportingTemplateModel import ExportingTemplate
 import Scraper as scraper
 import Scrapers.ManageData.ManageExportingTemplateScraper as manage_exporting_template_scraper
 import Controllers.Helper as helper

@@ -1,5 +1,5 @@
 import streamlit as st
-from ECG_Evaluation.Controllers.FilesModel import Files
+from Controllers.FilesModel import Files
 from Processors.ExportDataProcessor import ExportDataProcessor
 import Views.ExportingTemplateView as exporting_template_view
 import Views.ImportRecordView as import_record_view
