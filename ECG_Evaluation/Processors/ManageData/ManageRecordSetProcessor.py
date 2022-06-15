@@ -47,6 +47,7 @@ class ManageRecordSetProcessor:
                 id=str(record_set[cons.ECG_ID_SHORT])
             ))
 
+        # Check if there is no imported record in the DB --> If so, return a warning message
         if count < 1:
             st.warning('There is no item. Please check again!')
             st.stop()

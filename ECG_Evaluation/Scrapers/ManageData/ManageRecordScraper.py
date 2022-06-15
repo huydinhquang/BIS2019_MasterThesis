@@ -39,8 +39,7 @@ def delete_record(ecg_col, field_name, item_id):
 
 def delete_ecg_file(db,fs, field_name, item_id):
     data = scraper.find_by_single_item(db.fs.files, field_name, item_id)
-    if data.count() > 0:
-        for item in data:
-            file_id = item[cons.ECG_ID_SHORT]
-            fs.delete(file_id)
-            print(f'Deleted file_id: {file_id}')
+    for item in data:
+        file_id = item[cons.ECG_ID_SHORT]
+        fs.delete(file_id)
+        print(f'Deleted file_id: {file_id}')

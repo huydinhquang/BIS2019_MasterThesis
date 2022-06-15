@@ -17,11 +17,6 @@ class ManageRecordProcessor:
         # data = scraper.find_by_query(ecg_col, cons.CONS_QUERYREGEX_STR, cons.ECG_SOURCE, source_name)
         data = scraper.find(ecg_col)
 
-        # Check if there is no imported record in the DB --> If so, return a warning message
-        if (data.count() < 1):
-            st.warning('There is no item. Please check again!')
-            st.stop()
-
         for record in data:
             count = count + 1
             list_ecg.append(ECG(
@@ -38,7 +33,12 @@ class ManageRecordProcessor:
                 modified_date=common.convert_time_to_datetime(record[cons.ECG_MODIFIED_DATE]),
                 id=str(record[cons.ECG_ID_SHORT])
             ))
-            
+        
+        # Check if there is no imported record in the DB --> If so, return a warning message
+        if count < 1:
+            st.warning('There is no item. Please check again!')
+            st.stop()
+
         header_table = [
             cons.HEADER_SOURCE,
             cons.HEADER_FILENAME,

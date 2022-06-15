@@ -21,11 +21,6 @@ class ManageExportingTemplateProcessor:
 
         data = scraper.find(exp_template_col)
 
-        # Check if there is no imported record in the DB --> If so, return a warning message
-        if (data.count() < 1):
-            st.warning('There is no item. Please check again!')
-            st.stop()
-        
         for exp_template in data:
             count = count + 1
             list_exp_template.append(ExportingTemplate(
@@ -38,6 +33,11 @@ class ManageExportingTemplateProcessor:
                 id=str(exp_template[cons.ECG_ID_SHORT])
             ))
             
+        # Check if there is no imported record in the DB --> If so, return a warning message
+        if count < 1:
+            st.warning('There is no item. Please check again!')
+            st.stop()
+        
         header_table = [
             cons.HEADER_EXP_TEM,
             cons.HEADER_TARGET_SAMPLE_RATE,
