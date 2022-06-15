@@ -8,7 +8,7 @@
             "name": "Python: Streamlit",
             "type": "python",
             "request": "launch",
-            "module": "streamlit.cli",
+            "module": "streamlit",
             "args": [
             "run",
             "${file}",
