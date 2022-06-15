@@ -33,7 +33,7 @@ def save_ecg_file(db, file: Files, final_ecg_property: ECG):
     result = fs.put(data=data, file_name=file.file_name)
     output = fs.get(result)
     file_id = output._id
-    db.fs.files.update(
+    db.fs.files.update_one(
         {cons.ECG_ID_SHORT: file_id},
         {cons.CONS_SET_STR: {
             cons.FILE_ECG_ID: file.ecg_id,
