@@ -15,7 +15,7 @@ configure = config.get_configure_value()
 
 class ManageExportingTemplateProcessor:
     def load_record_data(self, db_result):
-        exp_template_col = db_result[cons.COLLECTION_TEMPLATE_EXPORTATION_NAME]
+        exp_template_col = db_result[cons.COLLECTION_EXPORTING_TEMPLATE_NAME]
         count = 0
         list_exp_template = []
 
@@ -146,13 +146,16 @@ class ManageExportingTemplateProcessor:
                     duration = int(st.number_input('Duration text', value=val_duration))
 
                 # Channel multi selection
-                # Value is defined from the configuration
-                # channel = st.multiselect('Channel(s)', options= configure[cons.CHANNEL_NAME], default=None)
+                # Values are defined from the configuration
+                # Set default values for values, which created before
+                channel_list = common.convert_string_to_list(row[cons.HEADER_CHANNEL], cons.CONS_SEMICOLON, True)
+                channel = st.multiselect('Channel(s)', options= configure[cons.CONF_CHANNEL_NAME], default=channel_list)
 
             save_clicked = st.form_submit_button("Save")
             if save_clicked:
                 new_exp_template_value = ExportingTemplate(
                     exporting_template_name=exp_template_name,
+                    channel=channel,
                     target_sample_rate=target_sample_rate,
                     duration=duration,
                     is_update=True

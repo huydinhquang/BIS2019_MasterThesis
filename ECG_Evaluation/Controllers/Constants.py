@@ -4,11 +4,15 @@ DB_NAME = 'db_name'
 COLLECTION_ECG_NAME = 'collection_ecg_name'
 COLLECTION_CHANNEL_NAME = 'collection_channel_name'
 COLLECTION_RECORD_SET_NAME = 'collection_record_set_name'
-COLLECTION_TEMPLATE_EXPORTATION_NAME = 'collection_template_exportation_name'
+COLLECTION_EXPORTING_TEMPLATE_NAME = 'collection_exporting_template_name'
 
 CONFIGURE = 'configure'
-FORMAT_DESCRIPTOR = 'format_descriptor'
-CHANNEL_NAME = 'channel_name'
+CONF_FORMAT_DESCRIPTOR = 'format_descriptor'
+CONF_CHANNEL_NAME = 'channel_name'
+CONF_FOLDER_IMPORT_RECORD = 'default_folder_import_record'
+CONF_FOLDER_IMPORT_RECORD_MASS = 'default_folder_import_record_mass'
+CONF_FOLDER_EXPORT_DATA = 'default_folder_export_data'
+CONF_FOLDER_TEMP = 'default_folder_temp'
 
 # ECG Model
 ECG_ID_SHORT = '_id'

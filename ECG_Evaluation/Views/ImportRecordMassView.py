@@ -1,5 +1,4 @@
 import streamlit as st
-from Controllers.ECGModel import ECG
 from Controllers.Configure import Configure
 import Controllers.Constants as cons
 
@@ -7,8 +6,8 @@ config = Configure()
 configure = config.get_configure_value()
 
 def load_form():
-    folder_source = st.text_input(label='Please enter a folder:', value="C:/Users/HuyDQ/OneDrive/HuyDQ/OneDrive/MasterThesis/Thesis/DB/PTB")
-    format_desc = st.selectbox('Format descriptor', configure[cons.FORMAT_DESCRIPTOR])
+    folder_source = st.text_input(label='Please enter a folder:', value=configure[cons.CONF_FOLDER_IMPORT_RECORD_MASS])
+    format_desc = st.selectbox('Format descriptor', configure[cons.CONF_FORMAT_DESCRIPTOR])
     retrieve_clicked = st.button('Retrieve property')
     return folder_source, format_desc, retrieve_clicked
 

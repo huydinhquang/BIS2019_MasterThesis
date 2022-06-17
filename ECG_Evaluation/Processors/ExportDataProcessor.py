@@ -27,7 +27,6 @@ class ExportDataProcessor:
         return result
     
     def load_record_set_data(self, record_set_col):
-        # st.session_state.select_row = True
         count = 0
         list_record_set = []
         # data = scraper.find_by_query(my_main_col, cons.CONS_QUERYREGEX_STR, cons.ECG_SOURCE, source_name)
@@ -41,7 +40,12 @@ class ExportDataProcessor:
                 id=str(record[cons.ECG_ID_SHORT]),
                 # source=record[cons.ECG_SOURCE]
             ))
-            
+
+        # Check if there is no imported record in the DB --> If so, return a warning message
+        if count < 1:
+            st.warning('There is no item of RecordSet. Please check again!')
+            st.stop()
+
         header_table = [
             cons.HEADER_RECORD_SET,
             cons.HEADER_CREATED_DATE,
@@ -74,6 +78,11 @@ class ExportDataProcessor:
                 id=str(record[cons.ECG_ID_SHORT])
             ))
             
+        # Check if there is no imported record in the DB --> If so, return a warning message
+        if count < 1:
+            st.warning('There is no item of Exporting Template. Please check again!')
+            st.stop()
+
         header_table = [
             cons.HEADER_EXP_TEM,
             cons.HEADER_CHANNEL,
@@ -92,7 +101,7 @@ class ExportDataProcessor:
     def load_data(self, db_result):
         ecg_col= db_result[cons.COLLECTION_ECG_NAME]
         record_set_col= db_result[cons.COLLECTION_RECORD_SET_NAME]
-        exp_tem_col=db_result[cons.COLLECTION_TEMPLATE_EXPORTATION_NAME]
+        exp_tem_col=db_result[cons.COLLECTION_EXPORTING_TEMPLATE_NAME]
 
         # Load full dataset of RecordSet
         df_record_set, count_record_set = self.load_record_set_data(record_set_col)

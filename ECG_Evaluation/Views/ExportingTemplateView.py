@@ -1,5 +1,4 @@
 import streamlit as st
-from Controllers.ECGModel import ECG
 from Controllers.Configure import Configure
 import Controllers.Constants as cons
 
@@ -30,7 +29,7 @@ def load_form():
 
     # Channel multi selection
     # Value is defined from the configuration
-    channel = st.multiselect('Channel(s)', options= configure[cons.CHANNEL_NAME], default=None)
+    channel = st.multiselect('Channel(s)', options= configure[cons.CONF_CHANNEL_NAME], default=None)
 
     # Buttons
     # Create

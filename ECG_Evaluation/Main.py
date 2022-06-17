@@ -146,7 +146,7 @@ elif main_selectbox == "exporting template":
     if create_clicked and exp_tem_name and len(list_channel) > 0:
         # Open MongoDB connection
         db_result = con.connect_mongodb()
-        template_id = exporting_template_scraper.add_template(db_result[cons.COLLECTION_TEMPLATE_EXPORTATION_NAME], form_result)
+        template_id = exporting_template_scraper.add_template(db_result[cons.COLLECTION_EXPORTING_TEMPLATE_NAME], form_result)
         if template_id:
             st.success('Added successfully!')
         else:
