@@ -13,6 +13,10 @@ import Controllers.Helper as helper
 import os
 import Controllers.WFDBHelper as wfdb_helper
 import numpy as np
+from Controllers.Configure import Configure
+
+config = Configure()
+configure = config.get_configure_value()
 
 class ExportDataProcessor:
     def load_channel_list_from_record_set(self, ecg_col, record_set_col, record_set_id):
@@ -37,8 +41,7 @@ class ExportDataProcessor:
                 record_set_name=record[cons.CONS_RECORD_SET_NAME],
                 created_date=common.convert_time_to_datetime(record[cons.CONS_CREATED_DATE]),
                 modified_date=common.convert_time_to_datetime(record[cons.CONS_MODIFIED_DATE]),
-                id=str(record[cons.ECG_ID_SHORT]),
-                # source=record[cons.ECG_SOURCE]
+                id=str(record[cons.ECG_ID_SHORT])
             ))
 
         # Check if there is no imported record in the DB --> If so, return a warning message
@@ -50,11 +53,21 @@ class ExportDataProcessor:
             cons.HEADER_RECORD_SET,
             cons.HEADER_CREATED_DATE,
             cons.HEADER_MODIFIED_DATE,
-            cons.HEADER_ID,
-            cons.HEADER_SOURCE
+            cons.HEADER_ID
         ]
 
+        column_names = [
+            cons.CONS_RECORD_SET_NAME,
+            cons.ECG_CREATED_DATE,
+            cons.ECG_MODIFIED_DATE,
+            cons.ECG_ID
+        ]
+
+        # Generate data from list RecordSet to table of DataFrame
         df = pd.DataFrame.from_records([vars(s) for s in list_record_set])
+        # Reorder columns of the DataFrame
+        df = df.reindex(columns=column_names)
+        # Set header names
         df.columns = header_table
 
         return df, count
@@ -149,7 +162,7 @@ class ExportDataProcessor:
             list_channels_str = 'Channel {}'.format(exp_tem_selected_rows[cons.HEADER_CHANNEL])
             
             # Retrieve list of channels from Exporting Template
-            list_channels = common.convert_string_to_list(exp_tem_selected_rows[cons.HEADER_CHANNEL], cons.CONS_COMMA, True)
+            list_channels = common.convert_string_to_list(exp_tem_selected_rows[cons.HEADER_CHANNEL], cons.CONS_SEMICOLON, True)
 
             with st.form("extract_data_form"):
                 # Widgets will be genrated by the number of ECG records
@@ -163,7 +176,7 @@ class ExportDataProcessor:
                     else:
                         st.multiselect(label='Record: {}'.format(x.file_name), options=x.channel, key=str(x.id))
 
-                folder_download = st.text_input(label='Downloadable folder:', value="C:/Users/HuyDQ/OneDrive/HuyDQ/OneDrive/MasterThesis/Thesis/DB/Download")
+                folder_download = st.text_input(label='Downloadable folder:', value=configure[cons.CONF_FOLDER_EXPORT_DATA])
 
                 # Every form must have a submit button.
                 extract_clicked = st.form_submit_button("Extract data")

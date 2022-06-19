@@ -16,16 +16,10 @@ def filter_record():
 
 def record_set():
     st.write('### Record set creation')
-    with st.form('Record set creation'):
+    with st.form('record_set_creation'):
         record_set_name = st.text_input('Record set name')
         create_clicked = st.form_submit_button('Create')
         return record_set_name, create_clicked
-
-def render_download_section():
-    folder_download = st.text_input(label='Download folder:', value=configure[cons.CONF_FOLDER_TEMP])
-    if folder_download:
-        clicked = st.button('Download files')
-        return folder_download, clicked
 
 def render_resample_signal():
     clicked = st.button('Resample signals')

@@ -19,7 +19,7 @@ def read_property(dir_name, file_list, file_name,format_desc):
     # Read record ecg property    
     if format_desc == cons.CONS_WFDB:
         processor.set(WFDBController(dir_name, file_name, file_list))
-    else:
+    elif format_desc == cons.CONS_SCIPY:
         processor.set(SciPyController(dir_name, file_name, file_list))
     return processor.get_record_property()
 
