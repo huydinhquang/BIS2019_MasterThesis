@@ -5,6 +5,7 @@ COLLECTION_ECG_NAME = 'collection_ecg_name'
 COLLECTION_CHANNEL_NAME = 'collection_channel_name'
 COLLECTION_RECORD_SET_NAME = 'collection_record_set_name'
 COLLECTION_EXPORTING_TEMPLATE_NAME = 'collection_exporting_template_name'
+COLLECTION_EXPORTING_REGION_NAME = 'collection_exporting_region_name'
 
 CONFIGURE = 'configure'
 CONF_FORMAT_DESCRIPTOR = 'format_descriptor'
@@ -106,6 +107,8 @@ CONS_CHANNELS = 'Channel(s)'
 CONS_TIMES = 'Time(s)'
 CONS_TOTAL_CHANNELS = 'Total channels'
 CONS_IS_UPDATE = 'is_update'
+CONS_START_TIME = 'Start time'
+CONS_END_TIME = 'End time'
 
 # Record Set
 CONS_RECORD_SET_NAME = 'record_set_name'
@@ -114,6 +117,11 @@ CONS_RECORD_SET_NAME = 'record_set_name'
 CONS_EXPORTING_TEMPLATE_NAME = 'exporting_template_name'
 CONS_TARGET_SAMPLE_RATE = 'target_sample_rate'
 CONS_DURATION = 'duration'
+
+# Exporting Region
+CONS_EXPORTING_REGION_RECORD_SET_ID = 'record_set_id'
+CONS_EXPORTING_REGION_START_TIME = 'start_time'
+CONS_EXPORTING_REGION_END_TIME = 'end_time'
 
 # Query
 CONS_QUERY_FROM = 'from'

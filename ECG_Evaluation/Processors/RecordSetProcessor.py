@@ -9,7 +9,7 @@ import Scraper as scraper
 import Scrapers.RecordSetScraper as record_set_scraper
 
 class RecordSetProcessor:
-    def load_record_data(self, db_result):
+    def load_record_set_data(self, db_result):
         ecg_col = db_result[cons.COLLECTION_ECG_NAME]
         record_set_col = db_result[cons.COLLECTION_RECORD_SET_NAME]
         # st.session_state.select_row = True
@@ -97,4 +97,7 @@ class RecordSetProcessor:
                     list_selected_ecg.append(ObjectId(row[cons.HEADER_ID]))
                 if len(list_selected_ecg) > 0:
                     record_set_id = record_set_scraper.add_record_set(record_set_col, record_set_name, list_selected_ecg)
-                    return record_set_id
+                    if record_set_id:
+                        st.success('Added successfully!')
+                    else:
+                        st.warning('Please try again!')

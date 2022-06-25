@@ -32,7 +32,7 @@ class ManageChannelProcessor:
         # df.columns = header_table
         df = pd.DataFrame(list_channel)
 
-        st.write('### Full Dataset', df)
+        st.write('### Records Data', df)
         st.info('Total items: ' + str(count))
         selected_indices = st.multiselect('Select rows:', df.index)
         if selected_indices or st.session_state.load_channel_list:

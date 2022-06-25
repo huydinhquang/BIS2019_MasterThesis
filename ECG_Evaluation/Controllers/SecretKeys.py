@@ -7,6 +7,7 @@ collection_ecg_name = st.secrets[cons.MONGODB][cons.COLLECTION_ECG_NAME]
 collection_channel_name = st.secrets[cons.MONGODB][cons.COLLECTION_CHANNEL_NAME]
 collection_record_set_name = st.secrets[cons.MONGODB][cons.COLLECTION_RECORD_SET_NAME]
 collection_exporting_template_name = st.secrets[cons.MONGODB][cons.COLLECTION_EXPORTING_TEMPLATE_NAME]
+collection_exporting_region_name  = st.secrets[cons.MONGODB][cons.COLLECTION_EXPORTING_REGION_NAME]
 
 format_descriptor = st.secrets[cons.CONFIGURE][cons.CONF_FORMAT_DESCRIPTOR]
 channel_name = st.secrets[cons.CONFIGURE][cons.CONF_CHANNEL_NAME]

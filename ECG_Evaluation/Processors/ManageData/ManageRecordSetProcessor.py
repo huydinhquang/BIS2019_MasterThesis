@@ -28,7 +28,7 @@ class ManageRecordSetProcessor:
         ecg_str = f'{cons.CONS_SEMICOLON} '.join(ecg_list)
         return ecg_str
 
-    def load_record_data(self, db_result):
+    def load_record_set_data(self, db_result):
         ecg_col = db_result[cons.COLLECTION_ECG_NAME]
         record_set_col = db_result[cons.COLLECTION_RECORD_SET_NAME]
         count = 0
@@ -76,7 +76,7 @@ class ManageRecordSetProcessor:
         df.columns = header_table
 
         with st.form("record_set_data_form"):
-            st.write('### Full Dataset', df)
+            st.write('### RecordSet Data', df)
             st.info('Total items: ' + str(count))
 
             selected_indices = st.multiselect('Select rows:', df.index)

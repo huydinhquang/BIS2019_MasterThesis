@@ -14,7 +14,7 @@ config = Configure()
 configure = config.get_configure_value()
 
 class ManageExportingTemplateProcessor:
-    def load_record_data(self, db_result):
+    def load_exp_temp_data(self, db_result):
         exp_template_col = db_result[cons.COLLECTION_EXPORTING_TEMPLATE_NAME]
         count = 0
         list_exp_template = []
@@ -66,7 +66,7 @@ class ManageExportingTemplateProcessor:
         df.columns = header_table
 
         with st.form("exp_template_data_form"):
-            st.write('### Full Dataset', df)
+            st.write('### Exporting Templates Data', df)
             st.info('Total items: ' + str(count))
 
             selected_indices = st.multiselect('Select rows:', df.index)

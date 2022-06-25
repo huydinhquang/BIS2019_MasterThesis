@@ -1,6 +1,8 @@
 import streamlit as st
 from Controllers.FilesModel import Files
-from Processors.ExportDataProcessor import ExportDataProcessor
+import Controllers.Constants as cons
+import Controllers.WFDBHelper as wfdb_helper
+import Views.ExportingRegionView as exporting_region_view
 import Views.ExportingTemplateView as exporting_template_view
 import Views.ImportRecordView as import_record_view
 import Views.ImportRecordMassView as import_record_mass_view
@@ -11,14 +13,15 @@ import Views.ManageData.ManageRecordSetView as manage_record_set_view
 import Views.ManageData.ManageExportingTemplateView as manage_exporting_template_view
 import Controllers.MongoDBConnection as con
 import Scrapers.ExportingTemplateScraper as exporting_template_scraper
+from Processors.ExportingTemplateProcessor import ExportingTemplateProcessor
+from Processors.ExportDataProcessor import ExportDataProcessor
+from Processors.ExportingRegionProcessor import ExportingRegionProcessor
 from Processors.RecordSetProcessor import RecordSetProcessor
 from Processors.ImportRecordProcessor import ImportRecordProcessor
 from Processors.ImportRecordMassProcessor import ImportRecordMassProcessor
 from Processors.ManageData.ManageRecordProcessor import ManageRecordProcessor
 from Processors.ManageData.ManageRecordSetProcessor import ManageRecordSetProcessor
 from Processors.ManageData.ManageExportingTemplateProcessor import ManageExportingTemplateProcessor
-import Controllers.Constants as cons
-import Controllers.WFDBHelper as wfdb_helper
 
 st.title('ECG System')
 
@@ -53,6 +56,12 @@ if 'edit_exp_template' not in st.session_state:
 	st.session_state.edit_exp_template = False
 if 'delete_exp_template' not in st.session_state:
 	st.session_state.delete_exp_template = False
+if 'exp_region_load_data' not in st.session_state:
+	st.session_state.exp_region_load_data = False
+if 'exp_region_load_record' not in st.session_state:
+	st.session_state.exp_region_load_record = False
+if 'exp_region_visualize_record' not in st.session_state:
+	st.session_state.exp_region_visualize_record = False
 
 record_set_processor = RecordSetProcessor()
 export_data_processor = ExportDataProcessor()
@@ -61,6 +70,8 @@ import_record_mass_processor = ImportRecordMassProcessor()
 manage_record_processor = ManageRecordProcessor()
 manage_record_set_processor = ManageRecordSetProcessor()
 manage_exporting_template_processor = ManageExportingTemplateProcessor()
+exporting_template_processor = ExportingTemplateProcessor()
+exporting_region_processor = ExportingRegionProcessor()
 
 def read_final_property(ecg_property, dir_name, file_name):
     # Get final ecg property
@@ -77,7 +88,7 @@ def read_final_property(ecg_property, dir_name, file_name):
 
 main_selectbox = st.sidebar.selectbox(
     "Task",
-    ("Home page", "Import Record", "Import Record - Mass Import", "Record Set", "Exporting Template", "Export Data", "Manage Data")
+    ("Home page", "Import Record", "Import Record - Mass Import", "Record Set", "Exporting Region", "Exporting Template", "Export Data", "Manage Data")
 )
 
 main_selectbox = main_selectbox.lower()
@@ -130,27 +141,28 @@ elif main_selectbox == "record set":
         db_result = con.connect_mongodb()
 
         # Load result after list channels selection
-        record_set_id = record_set_processor.load_record_data(db_result)
+        record_set_processor.load_record_set_data(db_result)        
 
-        if record_set_id:
-            st.success('Added successfully!')
+elif main_selectbox == "exporting region":
+    load_data_clicked = exporting_region_view.load_form()
+
+    if load_data_clicked or st.session_state.exp_region_load_data:
+        st.session_state.exp_region_load_data = True
+
+        # Open MongoDB connection
+        db_result = con.connect_mongodb()
+
+        # Load all records, which are imported into DB
+        exporting_region_processor.load_record_set_data(db_result)
 
 elif main_selectbox == "exporting template":
     form_result = exporting_template_view.load_form()
 
-    # Retrieve data from the view
-    create_clicked = form_result[cons.CONS_BUTTON_CREATE]
-    list_channel = form_result[cons.CONS_CHANNEL]
-    exp_tem_name = form_result[cons.CONS_EXPORTING_TEMPLATE_NAME]
+    # Open MongoDB connection
+    db_result = con.connect_mongodb()
 
-    if create_clicked and exp_tem_name and len(list_channel) > 0:
-        # Open MongoDB connection
-        db_result = con.connect_mongodb()
-        template_id = exporting_template_scraper.add_template(db_result[cons.COLLECTION_EXPORTING_TEMPLATE_NAME], form_result)
-        if template_id:
-            st.success('Added successfully!')
-        else:
-            st.warning('Please try again!')
+    # Save exporting template
+    exporting_template_processor.save_exporting_template(db_result[cons.COLLECTION_EXPORTING_TEMPLATE_NAME], form_result)
 
 elif main_selectbox == "export data":
     load_data_clicked = export_data_view.load_form()
@@ -190,7 +202,7 @@ elif main_selectbox == "manage data":
             db_result = con.connect_mongodb()
 
             # Load all records, which are imported into DB
-            record_id = manage_record_set_processor.load_record_data(db_result)
+            record_id = manage_record_set_processor.load_record_set_data(db_result)
 
     elif manage_data_selectbox == "exporting template":
         load_data_clicked = manage_exporting_template_view.load_form()
@@ -201,4 +213,4 @@ elif main_selectbox == "manage data":
             db_result = con.connect_mongodb()
 
             # Load all records, which are imported into DB
-            exp_template_id = manage_exporting_template_processor.load_record_data(db_result)
+            exp_template_id = manage_exporting_template_processor.load_exp_temp_data(db_result)

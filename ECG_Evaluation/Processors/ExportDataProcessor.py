@@ -118,7 +118,7 @@ class ExportDataProcessor:
 
         # Load full dataset of RecordSet
         df_record_set, count_record_set = self.load_record_set_data(record_set_col)
-        st.write('### Full RecordSet', df_record_set)
+        st.write('### RecordSet Data', df_record_set)
         st.info('Total items: {}'.format(str(count_record_set)))
 
         record_set_selected_indices = st.selectbox('Select rows:', df_record_set.index, key=record_set_col.name)
@@ -127,7 +127,7 @@ class ExportDataProcessor:
             
         # Load full dataset of Exporting Template
         df_exp_tem, count_exp_tem = self.load_exp_tem_data(exp_tem_col)
-        st.write('### Full Exporting Template', df_exp_tem)
+        st.write('### Exporting Template Data', df_exp_tem)
         st.info('Total items: {}'.format(str(count_exp_tem)))
         
         exp_tem_selected_indices = st.selectbox('Select rows:', df_exp_tem.index, key=exp_tem_col.name)
