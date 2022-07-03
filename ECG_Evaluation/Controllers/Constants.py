@@ -109,6 +109,7 @@ CONS_TOTAL_CHANNELS = 'Total channels'
 CONS_IS_UPDATE = 'is_update'
 CONS_START_TIME = 'Start time'
 CONS_END_TIME = 'End time'
+CONS_EXPORTING_REGION = 'exporting_region'
 
 # Record Set
 CONS_RECORD_SET_NAME = 'record_set_name'
@@ -120,6 +121,7 @@ CONS_DURATION = 'duration'
 
 # Exporting Region
 CONS_EXPORTING_REGION_RECORD_SET_ID = 'record_set_id'
+CONS_EXPORTING_REGION_ECG_ID = 'ecg_id'
 CONS_EXPORTING_REGION_START_TIME = 'start_time'
 CONS_EXPORTING_REGION_END_TIME = 'end_time'
 
@@ -128,8 +130,18 @@ CONS_QUERY_FROM = 'from'
 CONS_QUERY_LOCALFIELD = 'localField'
 CONS_QUERY_FOREIGNFIELD = 'foreignField'
 CONS_QUERY_AS = 'as'
+CONS_QUERY_LET = 'let'
+CONS_QUERY_PIPELINE = 'pipeline'
+CONS_QUERY_PATH = 'path'
+CONS_QUERY_PRESERVE = 'preserveNullAndEmptyArrays'
 CONS_QUERY_MATCH_QUERY = '$match'
 CONS_QUERY_LOOKUP_QUERY = '$lookup'
+CONS_QUERY_UNWIND_QUERY = '$unwind'
+CONS_QUERY_GROUP_QUERY = '$group'
+CONS_QUERY_EXPR_QUERY = '$expr'
+CONS_QUERY_AND_QUERY = '$and'
+CONS_QUERY_EQ_QUERY = '$eq'
+CONS_QUERY_PUSH_QUERY = '$push'
 
 # HDF5 Attribute
 CONS_HDF5_DS_SIGNAL = 'dataset_signal'

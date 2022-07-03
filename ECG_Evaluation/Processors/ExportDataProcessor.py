@@ -19,14 +19,21 @@ config = Configure()
 configure = config.get_configure_value()
 
 class ExportDataProcessor:
-    def load_channel_list_from_record_set(self, ecg_col, record_set_col, record_set_id):
+    def load_channel_list_from_record_set(self, ecg_col, record_set_col, exp_region_col, record_set_id):
         query_data = {
-            cons.CONS_QUERY_FROM : ecg_col.name,
             cons.CONS_QUERY_LOCALFIELD: cons.ECG_SOURCE,
             cons.CONS_QUERY_FOREIGNFIELD: cons.CONS_ID_SHORT,
-            cons.CONS_QUERY_AS: ecg_col.name,
             cons.CONS_ID_SHORT: record_set_id
         }
+
+        # Append a value to the existing 'from' key 
+        helper.add_value(query_data, cons.CONS_QUERY_FROM, ecg_col.name)
+        helper.add_value(query_data, cons.CONS_QUERY_FROM, exp_region_col.name)
+
+        # Append a value to the existing 'as' key 
+        helper.add_value(query_data, cons.CONS_QUERY_AS, ecg_col.name)
+        helper.add_value(query_data, cons.CONS_QUERY_AS, exp_region_col.name)
+
         result = export_data_scraper.find_channel_list(record_set_col, query_data)
         return result
     
@@ -115,6 +122,7 @@ class ExportDataProcessor:
         ecg_col= db_result[cons.COLLECTION_ECG_NAME]
         record_set_col= db_result[cons.COLLECTION_RECORD_SET_NAME]
         exp_tem_col=db_result[cons.COLLECTION_EXPORTING_TEMPLATE_NAME]
+        exp_region_col= db_result[cons.COLLECTION_EXPORTING_REGION_NAME]
 
         # Load full dataset of RecordSet
         df_record_set, count_record_set = self.load_record_set_data(record_set_col)
@@ -144,17 +152,17 @@ class ExportDataProcessor:
             record_set_id=ObjectId(record_set_selected_rows[cons.HEADER_ID])
             
             # Query to get list of ECG channels based on RecordSet Id
-            result = self.load_channel_list_from_record_set(ecg_col, record_set_col, record_set_id)
+            result = self.load_channel_list_from_record_set(ecg_col, record_set_col, exp_region_col, record_set_id)
             
             # Nested For Loop
             # Loop of RecordSet because it is a result --> Loop of RecordSet-ecg (here is ecg record) --> Get list of channels
             # Ex: 1 record set has many ecg records, and each ecg record has a collection of channels
             # Get more data with Record Id and file name
             ecg_data = [
-                ECG(id=y[cons.ECG_ID_SHORT],
-                    file_name=y[cons.ECG_FILE_NAME],
-                    channel=y[cons.ECG_CHANNEL],
-                    sample_rate=y[cons.ECG_SAMPLE_RATE])
+                ECG(id=y[cons.CONS_ECG][cons.ECG_ID_SHORT],
+                    file_name=y[cons.CONS_ECG][cons.ECG_FILE_NAME],
+                    channel=y[cons.CONS_ECG][cons.ECG_CHANNEL],
+                    sample_rate=y[cons.CONS_ECG][cons.ECG_SAMPLE_RATE])
                 for x in result for y in x[ecg_col.name]
             ]
 
@@ -178,12 +186,14 @@ class ExportDataProcessor:
 
                 folder_download = st.text_input(label='Downloadable folder:', value=configure[cons.CONF_FOLDER_EXPORT_DATA])
 
+                extract_entire = st.checkbox('Extract entire record(s)')
+
                 # Every form must have a submit button.
                 extract_clicked = st.form_submit_button("Extract data")
                 if extract_clicked:
-                    self.extract_data(db_result,ecg_data, folder_download,record_set_selected_rows,exp_tem_selected_rows, list_channels)
+                    self.extract_data(db_result,ecg_data, folder_download,extract_entire,record_set_selected_rows,exp_tem_selected_rows, list_channels)
 
-    def extract_data(self,db_result, ecg_data:list[ECG], folder_download,record_set,exp_tem, list_channels):
+    def extract_data(self,db_result, ecg_data:list[ECG], folder_download,extract_entire,record_set,exp_tem, list_channels):
         db= db_result[cons.DB_NAME]
         # Loop record in selected RecordSet
         for x in ecg_data:

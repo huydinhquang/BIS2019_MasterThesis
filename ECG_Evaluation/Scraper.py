@@ -4,7 +4,6 @@ import Controllers.Constants as cons
 from Controllers.FilesModel import Files
 from Controllers.ECGModel import ECG
 
-
 def connect_gridfs(db):
     return gridfs.GridFS(db)
 
@@ -46,9 +45,11 @@ def save_ecg_file(db, file: Files, final_ecg_property: ECG):
         print('file_path: ' + file.file_path)
         return file_id
 
+
 def find_by_single_item(col, field_name, item):
     query = {field_name: item}
     return col.find(query)
+
 
 def find_by_query(col, query_type, field_name, list_item):
     query = {field_name: {query_type: list_item}}
@@ -59,15 +60,7 @@ def find(col):
     return col.find()
 
 
-def find_with_aggregate(my_col, query_data):
-    # query = [{
-    #     "$match": {
-    #         '_id':ObjectId('625aa279ced1267d2208e9e2')
-    #     },
-    #     "$lookup": {
-    #         'from': 'ecg', 'localField': 'source', 'foreignField': 'source', 'as': 'ecg'
-    #     }
-    # }]
+def find_with_aggregate(col, query_data):
     is_match_query = query_data[cons.CONS_QUERY_MATCH_QUERY]
     if is_match_query:
         query = [
@@ -83,4 +76,8 @@ def find_with_aggregate(my_col, query_data):
             {
                 cons.CONS_QUERY_LOOKUP_QUERY: query_data[cons.CONS_QUERY_LOOKUP_QUERY]
             }]
-    return my_col.aggregate(query)
+    return col.aggregate(query)
+
+
+def find_nested_with_aggregate(col, query_data):
+    return col.aggregate(query_data)

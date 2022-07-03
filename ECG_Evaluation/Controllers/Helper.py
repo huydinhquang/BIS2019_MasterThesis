@@ -88,3 +88,15 @@ def create_hdf5(file_path, file_name, list_dataset):
             list_metadata = ds[cons.CONS_DS_METADATA]
             for x in list_metadata:
                 ds_result.attrs[x] = list_metadata[x]
+
+def add_value(dict_obj, key, value):
+    ''' Adds a key-value pair to the dictionary.
+        If the key already exists in the dictionary, 
+        it will associate multiple values with that 
+        key instead of overwritting its value'''
+    if key not in dict_obj:
+        dict_obj[key] = value
+    elif isinstance(dict_obj[key], list):
+        dict_obj[key].append(value)
+    else:
+        dict_obj[key] = [dict_obj[key], value]
