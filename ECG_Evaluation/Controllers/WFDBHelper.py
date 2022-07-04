@@ -24,10 +24,13 @@ def read_property(dir_name, file_list, file_name,format_desc):
     return processor.get_record_property()
 
 
-def get_record_property_with_condition(dir_name, file_name, channel_target):
-    # def get_record_property_constraint(self, signal_start, signal_end, channel_target):
-    # signals, fields = wfdb.rdsamp(self.dir_name + '/' + self.file_name, sampfrom=signal_start,sampto=signal_end, channels=[channel_target])
-    signals, fields = wfdb.rdsamp(os.path.join(dir_name,file_name), channels=channel_target)
+# def get_record_property_with_condition(dir_name, file_name, channel_target):
+def get_record_property_with_condition(dir_name, file_name, signal_start, signal_end, channel_target):
+    if signal_start is None or signal_end is None:
+        signals, fields = wfdb.rdsamp(os.path.join(dir_name,file_name), channels=channel_target)
+    else:
+        signals, fields = wfdb.rdsamp(os.path.join(dir_name,file_name), sampfrom=signal_start,sampto=signal_end, channels=channel_target)
+
     # headers = wfdb.rdheader(dir_name + '/' + file_name)
     fs = fields[cons.SAMPLING_FREQUENCY]
     time = round(len(signals) / fs)

@@ -169,7 +169,7 @@ class ManageRecordProcessor:
                     comments = st.text_area(cons.CONS_COMMENTS, value=cons.CONS_ADD_COMMENTS, height=120)
 
                 # Recalucate the number of samples based on the new sample rates
-                samples = np.ceil(sample_rate * row[cons.HEADER_SAMPLES] / row[cons.HEADER_SAMPLE_RATE])
+                samples = int(np.ceil(sample_rate * row[cons.HEADER_SAMPLES] / row[cons.HEADER_SAMPLE_RATE]))
 
             save_clicked = st.form_submit_button("Save")
             if save_clicked:

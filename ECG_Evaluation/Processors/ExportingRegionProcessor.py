@@ -225,6 +225,8 @@ class ExportingRegionProcessor:
             st.write('### Create exporting region')
             for index, row in selected_rows.iterrows():
                 record_id = ObjectId(row[cons.HEADER_ID])
+                samples = int(row[cons.HEADER_SAMPLES])
+                time = int(row[cons.HEADER_TIME])
 
                 # Start and end times
                 start_time = st.number_input(cons.CONS_START_TIME,min_value=0,step=1)
@@ -232,11 +234,17 @@ class ExportingRegionProcessor:
                 
             save_clicked = st.form_submit_button("Save")
             if save_clicked:
+                # Calculate sample "from" and "to" based on the "start" and "end" time
+                sample_from = int(np.ceil(samples * start_time / time))
+                sample_to = int(np.ceil(samples * end_time / time))
+
                 exporting_region_data = ExportingRegion(
                     record_set_id=ObjectId(record_set_id),
                     ecg_id=record_id,
                     start_time=start_time,
-                    end_time=end_time
+                    end_time=end_time,
+                    sample_from=sample_from,
+                    sample_to=sample_to
                 )
 
                 # Get Exporting Region Collection

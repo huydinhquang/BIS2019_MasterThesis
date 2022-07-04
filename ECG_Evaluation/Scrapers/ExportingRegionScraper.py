@@ -32,17 +32,14 @@ def find_record_list(my_col, query_data):
     return output
 
 def add_exporting_region(exporting_region_col, values:ExportingRegion):
-    record_set_id = values.record_set_id
-    ecg_id = values.ecg_id
-    start_time = values.start_time
-    end_time = values.end_time
-
     current_date = common.get_current_date()
     new_exporting_region_json = {
-        cons.CONS_EXPORTING_REGION_RECORD_SET_ID: record_set_id,
-        cons.FILE_ECG_ID: ecg_id,
-        cons.CONS_EXPORTING_REGION_START_TIME: start_time,
-        cons.CONS_EXPORTING_REGION_END_TIME: end_time,
+        cons.CONS_EXPORTING_REGION_RECORD_SET_ID: values.record_set_id,
+        cons.FILE_ECG_ID: values.ecg_id,
+        cons.CONS_EXPORTING_REGION_START_TIME: values.start_time,
+        cons.CONS_EXPORTING_REGION_END_TIME: values.end_time,
+        cons.CONS_EXPORTING_REGION_SAMPLE_FROM: values.sample_from,
+        cons.CONS_EXPORTING_REGION_SAMPLE_TO: values.sample_to,
         cons.CONS_CREATED_DATE: current_date, 
         cons.CONS_MODIFIED_DATE: current_date
     }

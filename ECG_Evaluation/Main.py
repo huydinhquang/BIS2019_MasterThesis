@@ -2,6 +2,7 @@ import streamlit as st
 from Controllers.FilesModel import Files
 import Controllers.Constants as cons
 import Controllers.WFDBHelper as wfdb_helper
+import Controllers.MongoDBConnection as con
 import Views.ExportingRegionView as exporting_region_view
 import Views.ExportingTemplateView as exporting_template_view
 import Views.ImportRecordView as import_record_view
@@ -11,8 +12,6 @@ import Views.ExportDataView as export_data_view
 import Views.ManageData.ManageRecordView as manage_record_view
 import Views.ManageData.ManageRecordSetView as manage_record_set_view
 import Views.ManageData.ManageExportingTemplateView as manage_exporting_template_view
-import Controllers.MongoDBConnection as con
-import Scrapers.ExportingTemplateScraper as exporting_template_scraper
 from Processors.ExportingTemplateProcessor import ExportingTemplateProcessor
 from Processors.ExportDataProcessor import ExportDataProcessor
 from Processors.ExportingRegionProcessor import ExportingRegionProcessor

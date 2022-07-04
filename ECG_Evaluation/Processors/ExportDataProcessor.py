@@ -162,7 +162,8 @@ class ExportDataProcessor:
                 ECG(id=y[cons.CONS_ECG][cons.ECG_ID_SHORT],
                     file_name=y[cons.CONS_ECG][cons.ECG_FILE_NAME],
                     channel=y[cons.CONS_ECG][cons.ECG_CHANNEL],
-                    sample_rate=y[cons.CONS_ECG][cons.ECG_SAMPLE_RATE])
+                    sample_rate=y[cons.CONS_ECG][cons.ECG_SAMPLE_RATE],
+                    exporting_region=y[cons.CONS_EXPORTING_REGION])
                 for x in result for y in x[ecg_col.name]
             ]
 
@@ -193,6 +194,120 @@ class ExportDataProcessor:
                 if extract_clicked:
                     self.extract_data(db_result,ecg_data, folder_download,extract_entire,record_set_selected_rows,exp_tem_selected_rows, list_channels)
 
+    def resample_signal_by_slice(self, samples, sample_rate, duration, list_channels):
+        # Calculate total length of the samples
+        len_total_samples = len(samples)
+
+        # Calculate the new length of the samples with the duration in the exporting template
+        step = sample_rate * duration
+
+        # Calculate number of slices (the total number samples divided by the step)
+        number_slice = len_total_samples / step
+        
+        # Calculate to get the list of array containing ECG signal data by with slice of the step
+        # Ex: [[0, 1, 2, ..., 9], [10, 11, 12, ..., 19], ..., [50, 51, 52, ..., 59]] - 5 slices with step: 10
+        result_list = [ samples[int(y):int(y)+step] for y in np.arange(number_slice)*step ]
+        
+        # Check the length of the last slice
+        # Round up 'number_slice' to the next integer
+        number_slice_round_up = np.ceil(number_slice)
+
+        # If the last slice does not have enough samples (Ex: 5200 samples instead of 10.000 samples)
+        # Add '0' to ensure the last slice will have the same length of samples with the others of the other arrays
+        if number_slice_round_up - number_slice > 0:
+            # Count the missing number of samples to fill up the length
+            missing_len_last_slice = step - len(result_list[-1])
+            # Create an empty list for later use
+            empty_list = []
+            # Add a list of zero to the created list based on the number of selected channels in the Exporting Template
+            # Result: [0. 0.] if there are 2 channels. The channels are dynamic, so the result can be different.
+            list_append_zero = np.pad(empty_list, (0, len(list_channels)), 'constant')
+            # Extend more the missing number of samples to the last slice.
+            ########################
+            # 0: No item is added to the beginning of the result_list
+            # missing_len_last_slice: Number of items is added to the end of the result_list
+            # 0: No item is added to the left of the dimension (array)
+            # 0: No item is added to the right of the dimension (array)
+            ########################
+            result_list[-1] = np.pad(result_list[-1], ((0, missing_len_last_slice), (0, 0)), constant_values=list_append_zero)
+
+        return result_list
+
+    def resample_entire_signal(self, ecg_data:list[ECG], list_files, duration, list_channels, target_sample_rate):
+        # Create a new matrix to store resampled signal by record
+        dataset_signal = []
+        dataset_record = []
+        for x in ecg_data:
+            # Get downloaded location of the ECG record
+            download_location = helper.get_folder_download(x, list_files)
+
+            # Read the ECG record by the limited channels, which are filtered by the exporting template
+            # The channels are accessed by WFDB helper with channel index
+            ecg_property:ECG = wfdb_helper.get_record_property_with_condition(download_location, x.file_name, x.channel_index)
+
+            result_list = self.resample_signal_by_slice(ecg_property.sample, ecg_property.sample_rate, duration, list_channels)
+
+            # Loop the slice of each record, which is divided by the duration
+            for slice in result_list:
+                # Get total number of channels in an ECG record
+                number_channel = slice.shape[1]
+                # Create a new list for each channel array (signal data)
+                list_channels_signal = np.array_split(slice, number_channel, axis=1)
+                # Create a new matrix to store resampled signal by channel
+                list_resampled_signal = []
+                list_channel_name = []
+                for idx, signal in enumerate(list_channels_signal):
+                    # Find the channel name from exporting template channels according to the index of list of channels signal
+                    current_channel_name = list_channels[idx]
+                    # Calculate the new data point as the resampling process
+                    resampled_signal = wfdb_helper.resampling_data(signal, target_sample_rate, ecg_property.sample_rate)
+                    # Append the matrix based on the sequence 
+                    list_resampled_signal.append(resampled_signal)
+                    list_channel_name.append(current_channel_name)
+                    # Visualize each slice of the record (this can reduce the performance)
+                    # wfdb_helper.visualize_chart(x.file_name, current_channel_name, signal, ecg_property.sample_rate, resampled_signal, target_sample_rate)
+                dataset_signal.append(list_resampled_signal)
+                dataset_record.append(x.file_name)
+
+        return dataset_signal, dataset_record
+
+
+    def resample_target_signal(self, ecg_data:list[ECG], list_files, duration, list_channels, target_sample_rate):
+        # Create a new matrix to store resampled signal by record
+        dataset_signal = []
+        dataset_record = []
+        for x in ecg_data:
+            # Get downloaded location of the ECG record
+            download_location = helper.get_folder_download(x, list_files)
+
+            for r in x.exporting_region:
+                sample_from=r[cons.CONS_EXPORTING_REGION_SAMPLE_FROM]
+                sample_to=r[cons.CONS_EXPORTING_REGION_SAMPLE_TO]
+                ecg_property:ECG = wfdb_helper.get_record_property_with_condition(download_location, x.file_name, sample_from, sample_to, x.channel_index)
+
+                # Calculate number of slices (the total number samples divided by the step)
+                result_list = self.resample_signal_by_slice(ecg_property.sample, ecg_property.sample_rate, duration, list_channels)
+
+                # Loop the slice of each record, which is divided by the duration
+                for slice in result_list:
+                    # Get total number of channels in an ECG record
+                    number_channel = slice.shape[1]
+                    # Create a new list for each channel array (signal data)
+                    list_channels_signal = np.array_split(slice, number_channel, axis=1)
+                    # Create a new matrix to store resampled signal by channel
+                    list_resampled_signal = []
+                    list_channel_name = []
+                    for idx, signal in enumerate(list_channels_signal):
+                        # Find the channel name from exporting template channels according to the index of list of channels signal
+                        current_channel_name = list_channels[idx]
+                        # Calculate the new data point as the resampling process
+                        resampled_signal = wfdb_helper.resampling_data(signal, target_sample_rate, ecg_property.sample_rate)
+                        # Append the matrix based on the sequence 
+                        list_resampled_signal.append(resampled_signal)
+                        list_channel_name.append(current_channel_name)
+
+        return dataset_signal, dataset_record
+
     def extract_data(self,db_result, ecg_data:list[ECG], folder_download,extract_entire,record_set,exp_tem, list_channels):
         db= db_result[cons.DB_NAME]
         # Loop record in selected RecordSet
@@ -218,74 +333,11 @@ class ExportDataProcessor:
         target_sample_rate = int(exp_tem[cons.HEADER_TARGET_SAMPLE_RATE])
         duration = int(exp_tem[cons.HEADER_DURATION])
 
-        # Create a new matrix to store resampled signal by record
-        dataset_signal = []
-        dataset_record = []
-        for x in ecg_data:
-            # Get downloaded location of the ECG record
-            download_location = helper.get_folder_download(x, list_files)
-
-            # Read the ECG record by the limited channels, which are filtered by the exporting template
-            # The channels are accessed by WFDB helper with channel index
-            ecg_property:ECG = wfdb_helper.get_record_property_with_condition(download_location, x.file_name, x.channel_index)
-
-            # Calculate total length of the samples
-            len_total_samples = len(ecg_property.sample)
-
-            # Calculate the new length of the samples with the duration in the exporting template
-            step = ecg_property.sample_rate * duration
-
-            # Calculate number of slices (the total number samples divided by the step)
-            number_slice = len_total_samples / step
-            
-            # Calculate to get the list of array containing ECG signal data by with slice of the step
-            # Ex: [[0, 1, 2, ..., 9], [10, 11, 12, ..., 19], ..., [50, 51, 52, ..., 59]] - 5 slices with step: 10
-            result_list = [ ecg_property.sample[int(y):int(y)+step] for y in np.arange(number_slice)*step ]
-            
-            # Check the length of the last slice
-            # Round up 'number_slice' to the next integer
-            number_slice_round_up = np.ceil(number_slice)
-
-            # If the last slice does not have enough samples (Ex: 5200 samples instead of 10.000 samples)
-            # Add '0' to ensure the last slice will have the same length of samples with the others of the other arrays
-            if number_slice_round_up - number_slice > 0:
-                # Count the missing number of samples to fill up the length
-                missing_len_last_slice = step - len(result_list[-1])
-                # Create an empty list for later use
-                empty_list = []
-                # Add a list of zero to the created list based on the number of selected channels in the Exporting Template
-                # Result: [0. 0.] if there are 2 channels. The channels are dynamic, so the result can be different.
-                list_append_zero = np.pad(empty_list, (0, len(list_channels)), 'constant')
-                # Extend more the missing number of samples to the last slice.
-                ########################
-                # 0: No item is added to the beginning of the result_list
-                # missing_len_last_slice: Number of items is added to the end of the result_list
-                # 0: No item is added to the left of the dimension (array)
-                # 0: No item is added to the right of the dimension (array)
-                ########################
-                result_list[-1] = np.pad(result_list[-1], ((0, missing_len_last_slice), (0, 0)), constant_values=list_append_zero)
-
-            # Loop the slice of each record, which is divided by the duration
-            for slice in result_list:
-                # Get total number of channels in an ECG record
-                number_channel = slice.shape[1]
-                # Create a new list for each channel array (signal data)
-                list_channels_signal = np.array_split(slice, number_channel, axis=1)
-                # Create a new matrix to store resampled signal by channel
-                list_resampled_signal = []
-                list_channel_name = []
-                for idx, signal in enumerate(list_channels_signal):
-                    # Find the channel name from exporting template channels according to the index of list of channels signal
-                    current_channel_name = list_channels[idx]
-                    # Calculate the new data point as the resampling process
-                    resampled_signal = wfdb_helper.resampling_data(signal, target_sample_rate, ecg_property.sample_rate)
-                    # Append the matrix based on the sequence 
-                    list_resampled_signal.append(resampled_signal)
-                    list_channel_name.append(current_channel_name)
-                    # Visualize each slice of the record (this can reduce the performance)
-                    # wfdb_helper.visualize_chart(x.file_name, current_channel_name, signal, ecg_property.sample_rate, resampled_signal, target_sample_rate)
-                dataset_signal.append(list_resampled_signal)
-                dataset_record.append(x.file_name)
+        # Resample signal process
+        if extract_entire:
+            dataset_signal, dataset_record = self.resample_entire_signal(ecg_data, list_files, duration, list_channels, target_sample_rate)
+        else:
+            dataset_signal, dataset_record = self.resample_target_signal(ecg_data, list_files, duration, list_channels, target_sample_rate)
 
         # Retrieve record set name from RecordSet
         record_set_name = record_set[cons.HEADER_RECORD_SET]
