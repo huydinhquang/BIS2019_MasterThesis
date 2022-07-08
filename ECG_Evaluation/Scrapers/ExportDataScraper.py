@@ -57,13 +57,27 @@ def find_channel_list(record_set_col, query_data):
             }
         }
     }
+
+    project_query = {
+        cons.CONS_ID_SHORT: 1,
+        cons.CONS_ECG: {
+            cons.CONS_ECG: 1,
+            cons.CONS_EXPORTING_REGION :{
+                cons.CONS_EXPORTING_REGION_START_TIME: 1,
+                cons.CONS_EXPORTING_REGION_END_TIME: 1,
+                cons.CONS_EXPORTING_REGION_SAMPLE_FROM: 1,
+                cons.CONS_EXPORTING_REGION_SAMPLE_TO: 1
+            }
+        }
+    }
     
     query_data = [
         {cons.CONS_QUERY_MATCH_QUERY: match_query},
         {cons.CONS_QUERY_LOOKUP_QUERY: lookup_query},
         {cons.CONS_QUERY_UNWIND_QUERY: unwind_query},
         {cons.CONS_QUERY_LOOKUP_QUERY: lookup_level_2_query},
-        {cons.CONS_QUERY_GROUP_QUERY: group_query}
+        {cons.CONS_QUERY_GROUP_QUERY: group_query},
+        {cons.CONS_QUERY_PROJECT_QUERY: project_query}
     ]
     output = scraper.find_nested_with_aggregate(record_set_col,query_data)
     
