@@ -109,3 +109,10 @@ def merge_array_from_list(arr):
     else:
       res.append(x)
   return res
+
+def concatenate_array_from_list(arr):
+    res = []
+    for item in arr:
+        for x in item:
+            res.append(x)        
+    return res

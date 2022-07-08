@@ -273,16 +273,14 @@ class ExportDataProcessor:
             result_signal, result_record = self.resample_signal_by_slice(x, ecg_property, duration, list_channels, target_sample_rate)
             dataset_signal.append(result_signal)
             dataset_record.append(result_record)
-            # np.vstack((dataset_signal, result_signal))
-            # np.vstack((dataset_record, result_record))
 
         return dataset_signal, dataset_record
 
 
     def resample_target_segment(self, ecg_data:list[ECG], list_files, duration, list_channels, target_sample_rate):
         # Create a new matrix to store resampled signal by record
-        list_dataset_signal = []
-        list_dataset_record = []
+        dataset_signal = []
+        dataset_record = []
         for x in ecg_data:
             # Get downloaded location of the ECG record
             download_location = helper.get_folder_download(x, list_files)
@@ -298,23 +296,12 @@ class ExportDataProcessor:
                     channel_target=x.channel_index)
 
                 # Calculate number of slices (the total number samples divided by the step)
-                result_list = self.resample_signal_by_slice(ecg_property.sample, ecg_property.sample_rate, duration, list_channels)
+                result_signal, result_record = self.resample_signal_by_slice(x, ecg_property, duration, list_channels, target_sample_rate)
 
-                # Loop the slice of each record, which is divided by the duration
-                for slice in result_list:
-                    # Get total number of channels in an ECG record
-                    number_channel = slice.shape[1]
-                    # Create a new list for each channel array (signal data)
-                    list_channels_signal = np.array_split(slice, number_channel, axis=1)
-                    # Create a new matrix to store resampled signal by channel
-                    list_resampled_signal = []
-                    for idx, signal in enumerate(list_channels_signal):
-                        # Calculate the new data point as the resampling process
-                        resampled_signal = wfdb_helper.resampling_data(signal, target_sample_rate, ecg_property.sample_rate)
-                        # Append the matrix based on the sequence 
-                        list_resampled_signal.append(resampled_signal)
+                dataset_signal.append(result_signal)
+                dataset_record.append(result_record)
 
-        return list_dataset_signal, list_dataset_record
+        return dataset_signal, dataset_record
 
     def extract_data(self,db_result, ecg_data:list[ECG], folder_download,extract_entire,record_set,exp_tem, list_channels):
         db= db_result[cons.DB_NAME]
@@ -367,15 +354,23 @@ class ExportDataProcessor:
         metadata_record_set[cons.HEADER_CHANNEL] = exp_tem[cons.HEADER_CHANNEL]
         ### --- ###
 
-
+        # Merge the resampled signal data of each record into only one array to output final data for HDF5 file format
+        # Ex:
+        # R1: [[[-0.1905, -0.4675 ], [-0.573, -0.8115 ]], [[-0.468, -0.3585 ], [-0.8145, -0.7735 ]]]
+        # R2: [[[-0.145, 0.52], [-0.065, 0.195 ]], [[-0.535, 0.405 ], [-0.05, 0.285 ]]]
+        # R3: [[[-0.2445, 0.1275], [-0.229, -0.147]], [[-0.117, -0.043], [-0.151, -0.046]]]
+        # Result: [[[-0.1905, -0.4675], [-0.573, -0.8115]], [[-0.468, -0.3585], [-0.8145, -0.7735]],
+        #           [[-0.145, 0.52], [-0.065, 0.195]], [[-0.535, 0.405], [-0.05, 0.285]],
+        #           [[-0.2445, 0.1275], [-0.229, -0.147]], [[-0.117, -0.043], [-0.151, -0.046]]]
         dataset_signal = helper.merge_array_from_list(dataset_signal)
-        dataset_record = helper.merge_array_from_list(dataset_record)
-
-        # # Flatten list of records (arrays) to only one array to output final data for HDF5 file format
-        # dataset_signal = [np.vstack((dataset_signal, x)) for x in list_dataset_signal]
-        # dataset_record = [np.vstack((dataset_record, x)) for x in list_dataset_record]
-        # # dataset_signal = list(np.concatenate(list_dataset_signal).flat)
-        # # dataset_record = list(np.concatenate(list_dataset_record).flat)
+        
+        # Concatenate the record name into only one array (Use for 1D dimension)
+        # Ex:
+        # R1: ['s0022lre', 's0022lre']
+        # R2: ['100', '100']
+        # R3: ['xyz', 'xyz']
+        # Result: ['s0022lre', 's0022lre', '100', '100', 'xyz', 'xyz']
+        dataset_record = helper.concatenate_array_from_list(dataset_record)
 
         list_dataset = []
         list_dataset.extend([{
