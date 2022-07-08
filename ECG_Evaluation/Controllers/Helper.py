@@ -100,3 +100,12 @@ def add_value(dict_obj, key, value):
         dict_obj[key].append(value)
     else:
         dict_obj[key] = [dict_obj[key], value]
+
+def merge_array_from_list(arr):
+  res = []
+  for x in arr:
+    if isinstance(x[0], list):
+      res = res + merge_array_from_list(x)
+    else:
+      res.append(x)
+  return res
