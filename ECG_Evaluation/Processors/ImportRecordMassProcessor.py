@@ -1,11 +1,10 @@
 import streamlit as st
 import Controllers.Constants as cons
 import Controllers.Common as common
+import Controllers.WFDBHelper as wfdb_helper
 import Scraper as scraper
 from Controllers.ECGModel import ECG
-import Controllers.Helper as helper
 from Controllers.FilesModel import Files
-import Controllers.WFDBHelper as wfdb_helper
 from Processors.ImportRecordProcessor import ImportRecordProcessor
 
 import_record_processor = ImportRecordProcessor()
@@ -25,7 +24,7 @@ class ImportRecordMassProcessor:
         source = list_ecg_attributes[cons.ECG_SOURCE]
         if not source:
             st.warning('Source must be defined!')
-            return
+            st.stop()
         
         db= db_result[cons.DB_NAME]
         ecg_col= db_result[cons.COLLECTION_ECG_NAME]
@@ -45,7 +44,20 @@ class ImportRecordMassProcessor:
 
             # Check if the channel is NOT defined, use the given channel from UI
             if not ecg_property.channel:
-                ecg_property.channel = common.convert_string_to_list(list_ecg_attributes[cons.ECG_CHANNEL], cons.CONS_SEMICOLON)
+                # Retrieve input value of channel from UI
+                channel_input = list_ecg_attributes[cons.ECG_CHANNEL]
+                # Stop if there is no defined value
+                if not channel_input:
+                    st.warning('Channel(s) must be defined!')
+                    st.stop()
+                else:
+                    ecg_property.channel = common.convert_string_to_list(list_ecg_attributes[cons.ECG_CHANNEL], cons.CONS_SEMICOLON)
+                    # Check if the number of channels from record with the number of defined channels from UI
+                    number_channel_input = len(ecg_property.channel)
+                    number_channel_record = ecg_property.sample.shape[1]
+                    if number_channel_input != number_channel_record:
+                        st.warning('Number of channel(s) from \'{0}\' record: {1} is not equal to number of channel(s) from the input: {2}'.format(ecg_record.file_name, number_channel_record, number_channel_input))
+                        st.stop()
 
             # Count length of the samples
             length_samples = len(ecg_property.sample)
@@ -54,20 +66,20 @@ class ImportRecordMassProcessor:
             if not ecg_property.sample_rate:
                 fs = list_ecg_attributes[cons.ECG_SAMPLE_RATE]
                 ecg_property.sample_rate = fs
-                ecg_property.time =  round(length_samples / fs)
+                ecg_property.time = int(round(length_samples / fs))
 
-                # Unify the format to WFDB (Ex: .mat --> .dat)
-                new_file_list = self.unify_format(ecg_property,dir_name,ecg_record.file_name)
-                # Check the result
-                if new_file_list and len(new_file_list) == 1:
-                    # Update the new file list based on the new unified format
-                    ecg_record = new_file_list[0]
+            # Unify the format to WFDB (Ex: .mat --> .dat)
+            new_file_list = self.unify_format(ecg_property,dir_name,ecg_record.file_name)
+            # Check the result
+            if new_file_list and len(new_file_list) == 1:
+                # Update the new file list based on the new unified format
+                ecg_record = new_file_list[0]
 
-                    # Update the number of file generation by the new format
-                    ecg_property.ecg = len(ecg_record.file_path)
-                else:
-                    st.error(f'Cannot unify the format for source name: {ecg_record.file_name}')
-                    continue
+                # Update the number of file generation by the new format
+                ecg_property.ecg = len(ecg_record.file_path)
+            else:
+                st.error(f'Cannot unify the format for source name: {ecg_record.file_name}')
+                continue
 
             # Update 'sample' property by total number of samples instead of data signal before saving ECG property
             # It can cause an error of 'the BSON document too large'
