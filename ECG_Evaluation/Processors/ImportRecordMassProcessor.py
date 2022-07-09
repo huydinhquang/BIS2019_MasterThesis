@@ -55,8 +55,8 @@ class ImportRecordMassProcessor:
                     # Check if the number of channels from record with the number of defined channels from UI
                     number_channel_input = len(ecg_property.channel)
                     number_channel_record = ecg_property.sample.shape[1]
-                    if number_channel_input != number_channel_record:
-                        st.warning('Number of channel(s) from \'{0}\' record: {1} is not equal to number of channel(s) from the input: {2}'.format(ecg_record.file_name, number_channel_record, number_channel_input))
+                    if not number_channel_input == number_channel_record:
+                        st.warning('Number of channel(s) from \'{0}\' record: {1} does not equal number of channel(s) from the input: {2}'.format(ecg_record.file_name, number_channel_record, number_channel_input))
                         st.stop()
 
             # Count length of the samples

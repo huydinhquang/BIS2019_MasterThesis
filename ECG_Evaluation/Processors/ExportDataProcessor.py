@@ -308,6 +308,12 @@ class ExportDataProcessor:
         # Loop record in selected RecordSet
         for x in ecg_data:
             selected_channel = st.session_state[x.id]
+            # Check if the number of channels from defined channels from UI with the number of the exporting template
+            number_channel_input = len(selected_channel)
+            number_channel_exp_tem = len(list_channels)
+            if not number_channel_input == number_channel_exp_tem:
+                st.warning('Number of channels from \'{0}\' record: {1} does not equal number of channel(s) from the exporting template: {2}'.format(x.file_name, number_channel_input, number_channel_exp_tem))
+                st.stop()
             list_channels_index = helper.get_list_index(selected_channel, x.channel)
             x.channel_index=list_channels_index
 
