@@ -1,17 +1,26 @@
-from bson.objectid import ObjectId
+import os
+from random import sample
 import numpy as np
 import streamlit as st
-from traitlets import default
-from Controllers.RecordSetModel import RecordSet
 import pandas as pd
 import Controllers.Constants as cons
 import Controllers.Common as common
-from Controllers.ExportingRegionModel import ExportingRegion
+import Controllers.Helper as helper
+import Controllers.WFDBHelper as wfdb_helper
 import Scrapers.ExportingRegionScraper as exporting_region_scraper
+import Scrapers.ExportDataScraper as export_data_scraper
+from Controllers.RecordSetModel import RecordSet
+from Controllers.FilesModel import Files
+from Controllers.ExportingRegionModel import ExportingRegion
 from Controllers.ECGModel import ECG
+from Controllers.Configure import Configure
+from bson.objectid import ObjectId
 
 CONS_ECG_DESC_STR = 'ecg_desc_str'
 CONS_ECG_LIST = 'ecg_list'
+
+config = Configure()
+configure = config.get_configure_value()
 
 class ExportingRegionProcessor:
     def get_first_record_set_from_list(self, list_item:list[RecordSet], field_value):
@@ -221,17 +230,25 @@ class ExportingRegionProcessor:
 
 
     def visualize_data(self, db_result, selected_rows, record_set_id):
+        record_id = None
+        for index, row in selected_rows.iterrows():
+            record_id = ObjectId(row[cons.HEADER_ID])
+            samples = int(row[cons.HEADER_SAMPLES])
+            time = int(row[cons.HEADER_TIME])
+            file_name = row[cons.HEADER_FILENAME]
+
+        if not record_id:
+            st.stop()
+
+        # Visualize chart
+        self.visualize_record(db_result, record_id, file_name)
+
         with st.form("exporting_region_form"):
             st.write('### Create exporting region')
-            for index, row in selected_rows.iterrows():
-                record_id = ObjectId(row[cons.HEADER_ID])
-                samples = int(row[cons.HEADER_SAMPLES])
-                time = int(row[cons.HEADER_TIME])
-
-                # Start and end times
-                start_time = st.number_input(cons.CONS_START_TIME,min_value=0,step=1)
-                end_time = st.number_input(cons.CONS_END_TIME,min_value=1,step=1,value=5)
-                
+            # Start and end times
+            start_time = st.number_input(cons.CONS_START_TIME,min_value=0,step=1)
+            end_time = st.number_input(cons.CONS_END_TIME,min_value=1,step=1,value=5)
+            # Save button
             save_clicked = st.form_submit_button("Save")
             if save_clicked:
                 # Calculate sample "from" and "to" based on the "start" and "end" time
@@ -258,3 +275,25 @@ class ExportingRegionProcessor:
                 else:
                     st.warning('Please try again!')
 
+    def visualize_record(self, db_result, record_id, file_name):
+        db= db_result[cons.DB_NAME]
+        
+        folder_download = st.text_input(label='Downloadable folder:', value=configure[cons.CONF_FOLDER_EXPORT_DATA],disabled=True)
+        
+        # Search by list of ECG Id to retrieve ECG files
+        list_files:list[Files] = export_data_scraper.retrieve_ecg_files(db, [record_id])
+
+        # Download and store the ECG files from MongoDB to local
+        # Create a folder for each file name to store all related ECG files (Ex: *.dat, *.hea, *.xyz)
+        for x in list_files:
+            # file_name = helper.get_file_name(x.file_name)
+            download_location = os.path.join(folder_download, f'{x.ecg_id}{cons.CONS_UNDERSCORE}{x.file_name}{cons.CONS_UNDERSCORE}{cons.CONS_TEMP_STR}')
+            helper.write_file(download_location, x.file_name_ext, x.output_data)
+            x.folder_download = download_location
+
+        # Read the ECG record
+        ecg_property:ECG = wfdb_helper.get_record_property(dir_name=download_location, file_name=file_name)
+
+        # Visualize with charts
+        wfdb_helper.visualize_record(file_name, ecg_property)
+        

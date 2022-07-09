@@ -1,16 +1,16 @@
-import streamlit as st
-from Controllers.ECGModel import ECG
-import wfdb
 # import pandas as pd
-import Controllers.Constants as cons
-import Controllers.Common as common
+import streamlit as st
+import wfdb
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import Controllers.Constants as cons
+import Controllers.Common as common
+import Controllers.Helper as helper
+from Processor import Processor
+from Controllers.ECGModel import ECG
 from Controllers.WFDBController import WFDBController
 from Controllers.SciPyController import SciPyController
-from Processor import Processor
-import Controllers.Helper as helper
 
 processor = Processor()
 
@@ -24,7 +24,19 @@ def read_property(dir_name, file_list, file_name,format_desc):
     return processor.get_record_property()
 
 
-# def get_record_property_with_condition(dir_name, file_name, channel_target):
+def get_record_property(dir_name, file_name):
+    signals, fields = wfdb.rdsamp(os.path.join(dir_name,file_name))
+    fs = fields[cons.SAMPLING_FREQUENCY]
+    time = round(len(signals) / fs)
+    channels = [item.upper() for item in fields[cons.SINGAL_NAME]] 
+    return ECG(
+        file_name=file_name,
+        channel=channels,
+        sample=signals,
+        time=time,
+        sample_rate=fs
+    )
+
 def get_record_property_with_condition(dir_name, file_name, channel_target, sample_from=None, sample_to=None):
     if sample_from is None or sample_to is None:
         signals, fields = wfdb.rdsamp(os.path.join(dir_name,file_name), channels=channel_target)
@@ -90,7 +102,49 @@ def resampling_data(signals, fs_target, fs):
     resampled_signal = np.interp(time_signal_new, time_signal, signals_flatten)
     return resampled_signal
 
-def visualize_chart(file_name, channel_name, signal, fs, resampled_signal, fs_target):
+
+def visualize_record(file_name, ecg_property):
+    # Get sample rate (Frequency)
+    fs = ecg_property.sample_rate
+
+    # Count total number of channels in the record
+    number_channels = len(ecg_property.channel)
+
+    # Set default value for columns visualization
+    default_value = 1
+    if number_channels > 3:
+        default_value = 3
+    # Number of columns in visualization
+    columns = st.number_input('Columns for record visualization', min_value=1, max_value=number_channels, step=1, value=default_value)
+
+    # Number of rows in visualization
+    rows = int(np.ceil(number_channels / columns))
+
+    for idx, x in enumerate(ecg_property.channel):
+        # Start the subplot must be 1
+        index_subplot = idx + 1
+
+        # Extract signal data from list of samles by vertical axis
+            # Horizontal = 0 
+            # Vertical = 1
+        axis = 1
+        signal = np.take(ecg_property.sample, [idx], axis)
+        time_signal = np.arange(signal.size) / fs
+
+        plt.subplot(rows, columns, index_subplot)
+        plt.plot(time_signal, signal)
+        plt.title(f'Channel: {x}')
+        plt.xlabel='time (s)'
+        plt.ylabel='mV'
+
+    plt.suptitle(f'File name: {file_name}, Feq: {str(fs)}')   
+    
+    # Tight layout
+    plt.tight_layout()
+    
+    st.pyplot(plt)
+
+def visualize_resampled_signal(file_name, channel_name, signal, fs, resampled_signal, fs_target):
     time_signal = np.arange(signal.size) / fs
     time_resampled_signal = np.arange(resampled_signal.size) / fs_target
 
