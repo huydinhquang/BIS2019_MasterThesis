@@ -14,7 +14,7 @@ class ExportingTemplate():
     @property
     def value(self):
         # print('Getting value')
-        return self.exp_tem_name, self.channel, self.target_sample_rate, self.duration, self.created_date, self.modified_date, self.id
+        return self.exporting_template_name, self.channel, self.target_sample_rate, self.duration, self.created_date, self.modified_date, self.id
  
     # setting the values
     @value.setter
